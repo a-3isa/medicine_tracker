@@ -1,4 +1,4 @@
-name: iOS-ipa-build
+name: iOS-build
 
 on:
   workflow_dispatch:
@@ -8,35 +8,77 @@ jobs:
     name: 🎉 iOS Build
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - uses: subosito/flutter-action@v2
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           architecture: x64
-      - run: flutter pub get
-      
 
-      - run: pod repo update
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Update CocoaPods repository
+        run: pod repo update
         working-directory: ios
 
-      - run: flutter build ios --release --no-codesign
+      - name: Build iOS
+        run: flutter build ios --release --no-codesign
 
-      - run: mkdir Payload
+      - name: Archive the Runner.app
+        run: |
+          mkdir -p build/ios/Runner.app
+          cp -r build/ios/iphoneos/Runner.app build/ios/Runner.app
+
+      - name: Create Payload directory
+        run: mkdir Payload
         working-directory: build/ios/iphoneos
 
-      - run: mv Runner.app/ Payload
+      - name: Move Runner.app to Payload
+        run: mv Runner.app Payload/
         working-directory: build/ios/iphoneos
 
-      - name: Zip output
+      - name: Zip Payload into IPA
         run: zip -qq -r -9 FlutterIpaExport.ipa Payload
         working-directory: build/ios/iphoneos
 
-      - name: Upload binaries to release
+      - name: Upload Runner.app artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Runner-app
+          path: build/ios/Runner.app
+
+      - name: Upload FlutterIpaExport.ipa artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: FlutterIpaExport
+          path: build/ios/iphoneos/FlutterIpaExport.ipa
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v1.1
+          release_name: 'First Release'
+          body: "This is the first release"
+          draft: false
+          prerelease: false
+
+      - name: Upload Runner.app to GitHub Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/ios/Runner.app
+          tag: v1.1
+          overwrite: true
+
+      - name: Upload FlutterIpaExport.ipa to GitHub Release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: build/ios/iphoneos/FlutterIpaExport.ipa
-          tag: v1.0
+          tag: v1.1
           overwrite: true
-          body: "This is first release"
