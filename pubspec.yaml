@@ -1,0 +1,40 @@
+name: medicine_tracker
+description: "A new Flutter project."
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+version: 1.0.0+1
+environment:
+  sdk: '>=3.3.2 <4.0.0'
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  table_calendar : ^3.0.9
+  shared_preferences: ^2.0.0
+  mocktail: ^1.0.3
+  syncfusion_flutter_calendar: ^25.1.39 
+  image_picker: ^0.8.4+4
+  path_provider: ^2.0.6
+  intl: ^0.18.1
+  scoped_model: 2.0.0
+  cupertino_icons: ^1.0.6
+  pdf: ^3.10.8
+  share_plus: ^4.0.4
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  intl_translation: 0.19.0  # Use the latest version available
+  flutter_lints: ^3.0.0
+
+
+flutter:
+  generate: true  # Enables code generation for localizations
+  uses-material-design: true
+  assets:
+    - assets/1.png
+    - assets/1.jpg
+    - assets/NotoSans-Regular.ttf
