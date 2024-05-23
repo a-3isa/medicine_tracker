@@ -38,4 +38,10 @@ abstract class Languages {
   String get systolicBloodPressure;
   String get heartRate;
   String get enterBiometrics;
+  String get name;
+  String get age;
+  String get personalCase;
+  String get inputBiometrics;
+  String get sharePDF;
+  String get menu;
 }

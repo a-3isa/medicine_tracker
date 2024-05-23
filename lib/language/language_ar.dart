@@ -80,4 +80,25 @@ class LanguageAr extends Languages {
   
   @override
   String get systolicBloodPressure => 'ضغط دم انقباضي';
+  
+  @override
+  String get age => "العمر";
+  
+  @override
+  String get name => "الإسم";
+  
+  @override
+  String get personalCase => "الحالة";
+  
+  @override
+  // TODO: implement inputBiometrics
+  String get inputBiometrics => "أضف القياسات الحيوية";
+  
+  @override
+  // TODO: implement menu
+  String get menu => "القائمة";
+  
+  @override
+  // TODO: implement sharePDF
+  String get sharePDF => "مشاركة";
 }

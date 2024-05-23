@@ -80,4 +80,25 @@ class LanguageEn extends Languages {
   
   @override
   String get systolicBloodPressure => 'Systolic Blood Pressure';
+  
+  @override
+  String get age => "Age";
+  
+  @override
+  String get name => "Name";
+  
+  @override
+  String get personalCase => "Case";
+  
+  @override
+  // TODO: implement inputBiometrics
+  String get inputBiometrics => "Input Biometrics";
+  
+  @override
+  // TODO: implement menu
+  String get menu => "Menu";
+  
+  @override
+  // TODO: implement sharePDF
+  String get sharePDF => "Share";
 }

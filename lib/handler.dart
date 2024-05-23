@@ -1,14 +1,13 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:medicine_tracker/classes_handler.dart';
 import 'package:medicine_tracker/home_screen.dart';
 import 'package:medicine_tracker/language/language.dart';
 import 'package:medicine_tracker/medicine.dart';
 import 'package:medicine_tracker/mk_sh_pdf.dart';
-import 'package:path_provider/path_provider.dart';
 
 class MedicineTablePage extends StatefulWidget {
   const MedicineTablePage({super.key});
@@ -41,78 +40,77 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text('Medicine Tracker'),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () async {
-              final pdfFile =
-                  await PDFCreator.createPDF(loadMedicines(), loadBiometrics());
-              sharePdf(pdfFile);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.monitor_heart_outlined),
-            onPressed: () {
-              _showBiometricsInputPopup(context);
-            },
-          ),
-        ],
-      ),
-      body: Center(
-        child: Column(
-          children: [
-            SizedBox(
-              width: 850,
-              child: Column(
-                children: [
-                  AddMedicineWidget(
-                    onMedicineAdded: onMedicineAdded,
-                  ),
-                  const SizedBox(height: 20),
-                  if (medicines != null)
-                    MedicineTable(
-                      medicines: medicines!,
-                      onCheckboxChanged: onCheckboxChanged,
-                      onDeletePressed: _deleteMedicine,
-                      onEditPressed: _showEditMedicineDialog,
-                      // onDaysEditPressed: _showBiometricsInputPopup,
-                      // onBiometrics: _showBiometricsInputPopup,
-                    ),
-                ],
+        appBar: AppBar(
+          centerTitle: true,
+          title: const Text('Medicine Tracker'),
+          
+        ),drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                color: Colors.blue,
               ),
+              child: Text(
+                Languages.of(context)!.menu,
+                style: const TextStyle(color: Colors.white, fontSize: 25),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.share),
+              title: Text(Languages.of(context)!.sharePDF),
+              onTap: () async {
+                final pdfFile = await PDFCreator.createPDF(
+                    loadMedicines(), loadBiometrics(), loadPersonal());
+                sharePdf(pdfFile);
+                Navigator.of(context).pop();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.monitor_heart_outlined),
+              title: Text(Languages.of(context)!.inputBiometrics),
+              onTap: () {
+                _showBiometricsInputPopup(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.add_box_rounded),
+              title: Text(Languages.of(context)!.addMedicine),
+              onTap: () {
+                _showAddMedicineDialog(context);
+              },
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _showAddMedicineDialog(context);
-        },
-        child: const Icon(Icons.add),
-      ),
-    );
+        body: medicines != null
+            ? MedicineTable(
+                medicines: medicines!,
+                // onCheckboxChanged: onCheckboxChanged,
+                onDeletePressed: _deleteMedicine,
+                onEditPressed: _showEditMedicineDialog,
+              )
+            : const Text(""));
   }
 
   void onMedicineAdded(String medicineName, String? imagePath, String time) {
     setState(() {
-      final List<bool> initialCheckboxStates = List.filled(7, false);
-      final List<String> initialhours = List.filled(7, "");
+      List<Map<bool,String>> initialCheckboxStates = List.filled(7, {false:""});
+      // List<String> initialhours = List.filled(7, "");
       final creationDay = DateTime.now();
-      List<String> days = [];
-      List<String> dates = [];
+      // List<String> days = [];
+      List<Map<String,String>> dates = [];
 
       for (int i = 0; i < 7; i++) {
         DateTime date = creationDay.add(Duration(days: i));
         String dayName = DateFormat(
           'EEEE',
         ).format(date);
-        days.add(dayName);
-        dates.add(DateFormat(
+        // days.add(dayName);
+        dates.add({DateFormat(
           'MM-dd',
-        ).format(date));
+        ).format(date):dayName});
       }
 
       final medicine = Medicine(
@@ -120,10 +118,10 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
         imagePath: imagePath,
         time: time,
         creationDay: creationDay,
-        days: days,
-        dates: dates,
-        checkboxStates: initialCheckboxStates,
-        hours: initialhours,
+        // days: days,
+        dates: dates, checkboxStates: initialCheckboxStates,
+        // checkboxStates: initialCheckboxStates,
+        // hours: initialhours,
       );
       if (medicines != null) {
         medicines!.add(medicine);
@@ -160,14 +158,14 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
     return timeOptions.indexOf(time);
   }
 
-  void onCheckboxChanged(int medicineIndex, int dayIndex, bool value) {
-    setState(() {
-      if (medicines != null) {
-        medicines![medicineIndex].checkboxStates[dayIndex] = value;
-        saveMedicines(medicines!);
-      }
-    });
-  }
+  // void onCheckboxChanged(int medicineIndex, int dayIndex, bool value,String time) {
+  //   setState(() {
+  //     if (medicines != null) {
+  //       medicines![medicineIndex].checkboxStates[dayIndex].keys.first = value;
+  //       saveMedicines(medicines!);
+  //     }
+  //   });
+  // }
 
   Future<void> _showAddMedicineDialog(BuildContext context) async {
     final TextEditingController textEditingController = TextEditingController();
@@ -211,8 +209,8 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                   },
                   child: Text(Languages.of(context)!.selectImage),
                 ),
-                const SizedBox(height: 20),
-                DropdownButton<String>(
+                const SizedBox(height: 30),
+                DropdownButton<String>(itemHeight: 75,
                   value: time,
                   onChanged: (String? newValue) {
                     setState(() {
@@ -224,7 +222,11 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                       .map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
-                      child: Text(value),
+                      child: Container(decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Colors.grey, width: 1.0),
+              ),
+            ),child: Text(value)),
                     );
                   }).toList(),
                 ),
@@ -244,6 +246,8 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                     textEditingController.clear();
                     onMedicineAdded(medicineName, selectedImage?.path, time);
                     Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+
                   }
                 },
                 child: Text(Languages.of(context)!.add),
@@ -254,42 +258,6 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
       ),
     );
     textEditingController.clear();
-  }
-
-  Future<List<Medicine>> loadMedicines() async {
-    final Directory appDocumentsDirectory =
-        await getApplicationDocumentsDirectory();
-    final File file = File('${appDocumentsDirectory.path}/medicines.json');
-    if (file.existsSync()) {
-      final jsonString = file.readAsStringSync();
-      final List<dynamic> jsonList = json.decode(jsonString);
-      final data = jsonList.map((json) => Medicine.fromJson(json)).toList();
-      return data;
-    }
-    return [];
-  }
-
-  Future<List<Biometrics>> loadBiometrics() async {
-    final Directory appDocumentsDirectory =
-        await getApplicationDocumentsDirectory();
-    final File file = File('${appDocumentsDirectory.path}/biometrics.json');
-    if (file.existsSync()) {
-      final jsonString = file.readAsStringSync();
-      final List<dynamic> jsonList = json.decode(jsonString);
-      final data = jsonList.map((json) => Biometrics.fromJson(json)).toList();
-      return data;
-    }
-    return [];
-  }
-
-  Future<void> saveMedicines(List<Medicine> medicines) async {
-    final Directory appDocumentsDirectory =
-        await getApplicationDocumentsDirectory();
-    final File file = File('${appDocumentsDirectory.path}/medicines.json');
-    final List<dynamic> jsonList =
-        medicines.map((medicine) => medicine.toJson()).toList();
-    final jsonString = json.encode(jsonList);
-    await file.writeAsString(jsonString);
   }
 
   Future<void> _showEditMedicineDialog(
@@ -420,44 +388,49 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title:  Text(Languages.of(context)!.enterBiometrics),
+          title: Text(Languages.of(context)!.enterBiometrics),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextFormField(
-                  decoration: InputDecoration(labelText: Languages.of(context)!.heartRate),
+                  decoration: InputDecoration(
+                      labelText: Languages.of(context)!.heartRate),
                   keyboardType: TextInputType.number,
                   onChanged: (value) {
                     heartRate = int.tryParse(value);
                   },
                 ),
                 TextFormField(
-                  decoration:
-                      InputDecoration(labelText: Languages.of(context)!.systolicBloodPressure),
+                  decoration: InputDecoration(
+                      labelText: Languages.of(context)!.systolicBloodPressure),
                   keyboardType: TextInputType.number,
                   onChanged: (value) {
                     bloodPressure[0] = int.tryParse(value) ?? 0;
                   },
                 ),
                 TextFormField(
-                  decoration:
-                      InputDecoration(labelText: Languages.of(context)!.diastolicBloodPressure),
+                  decoration: InputDecoration(
+                      labelText: Languages.of(context)!.diastolicBloodPressure),
                   keyboardType: TextInputType.number,
                   onChanged: (value) {
                     bloodPressure[1] = int.tryParse(value) ?? 0;
                   },
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: Languages.of(context)!.oxygenLevel),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                      labelText: Languages.of(context)!.oxygenLevel),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                   onChanged: (value) {
                     oxygen = double.tryParse(value);
                   },
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: Languages.of(context)!.sugarLevel),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: InputDecoration(
+                      labelText: Languages.of(context)!.sugarLevel),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                   onChanged: (value) {
                     sugar = double.tryParse(value);
                   },
@@ -470,7 +443,7 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child:  Text(Languages.of(context)!.cancel),
+              child: Text(Languages.of(context)!.cancel),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -482,28 +455,20 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                   sugar: sugar,
                   time: time,
                 );
-               
-biometricss!.add(biometrics);
+
+                biometricss!.add(biometrics);
 
                 await saveBiometrics(biometricss!);
                 Navigator.of(context).pop();
+                Navigator.of(context).pop();
+
               },
-              child:  Text(Languages.of(context)!.save),
+              child: Text(Languages.of(context)!.save),
             ),
           ],
         );
       },
     );
-  }
-
-  Future<void> saveBiometrics(List<Biometrics> biometricsList) async {
-    final Directory appDocumentsDirectory =
-        await getApplicationDocumentsDirectory();
-    final File file = File('${appDocumentsDirectory.path}/biometrics.json');
-    final List<dynamic> jsonList =
-        biometricsList.map((biometrics) => biometrics.toJson()).toList();
-    final jsonString = json.encode(jsonList);
-    await file.writeAsString(jsonString);
   }
 
   void _deleteMedicine(int index) {

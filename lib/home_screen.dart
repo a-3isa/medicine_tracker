@@ -5,10 +5,11 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'medicine.dart';
 import 'package:medicine_tracker/language/language.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class MedicineTable extends StatefulWidget {
   final List<Medicine> medicines;
-  final Function(int, int, bool) onCheckboxChanged;
+  // final Function(int, int, bool,String) onCheckboxChanged;
   final void Function(BuildContext, Medicine) onEditPressed; // Updated callback
   // final void Function(BuildContext, Medicine) onDaysEditPressed; // New callback
   // final void Function(BuildContext) onBiometrics; // New callback
@@ -17,7 +18,7 @@ class MedicineTable extends StatefulWidget {
   const MedicineTable({
     super.key,
     required this.medicines,
-    required this.onCheckboxChanged,
+    // required this.onCheckboxChanged,
     required this.onEditPressed,
     // required this.onDaysEditPressed,
     // required this.onBiometrics,
@@ -64,6 +65,7 @@ class _MedicineTableState extends State<MedicineTable> {
             label: SizedBox(
           width: column2Width,
           child: Text(
+            textAlign: TextAlign.center,
             Languages.of(context)!.imageColumn,
             style: TextStyle(
               fontSize: fontSize, // Adjust the font size as needed
@@ -100,117 +102,185 @@ class _MedicineTableState extends State<MedicineTable> {
 
   @override
   Widget build(BuildContext context) {
-    return 
+    double screenWidth = MediaQuery.of(context).size.width;
+    List<Medicine>? medicines = widget.medicines;
+
+    return Column(
+      children: [
         SingleChildScrollView(
-          padding: EdgeInsets.zero,
+          scrollDirection: Axis.horizontal,
           child: DataTable(
-            dataRowMaxHeight: 100,
-            columnSpacing: 10,
-            headingRowHeight: 40,
-            columns: _buildColumns(context),
-            rows: List.generate(widget.medicines.length, (i) {
-              List<Medicine>? medicines = widget.medicines;
-          
-              final medicine = widget.medicines[i];
-              DateTime currentDay = DateTime.now();
-              DateTime weekEnd =
-                  medicine.creationDay.add(const Duration(days: 7));
-              final currentDate = DateTime.now();
-              final currentDayName = DateFormat(
-                'EEEE',
-              ).format(currentDate);
-              // Update the creationDay if the current day is after the weekEnd
-              if (currentDay.isAfter(weekEnd)) {
-                int weeksPassed = 1;
-                medicine.creationDay = weekEnd;
-                weekEnd = weekEnd.add(Duration(days: 7 * weeksPassed));
-          
-                // Extend the lists to accommodate new unchecked days up to the current day
-                for (int j = 0; j < 7 * weeksPassed; j++) {
-                  medicine.days.add(DateFormat(
-                    'EEEE',
-                  ).format(currentDay.add(Duration(days: j))));
-                  medicine.dates.add(DateFormat('MM-dd')
-                      .format(currentDay.add(Duration(days: j))));
-                  medicine.hours.add("");
-                  medicine.checkboxStates
-                      .add(false); // Default to false for new days
+              dataRowMaxHeight: 0,
+              columnSpacing: 9,
+              headingRowHeight: 50,
+              columns: _buildColumns(context),
+              rows: const []),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: DataTable(
+              dataRowMaxHeight: 100,
+              columnSpacing: 0,
+              headingRowHeight: 0,
+              columns: _buildColumns(context),
+              rows: List.generate(widget.medicines.length, (i) {
+                Medicine medicine = widget.medicines[i];
+                
+                DateTime currentDay = DateTime.now();
+                DateTime weekEnd =
+                    medicine.creationDay.add(const Duration(days: 7));
+                final currentDate = DateTime.now();
+                final currentDayName = DateFormat(
+                  'EEEE',
+                ).format(currentDate);
+                if (currentDay.isAfter(weekEnd)) {
+                  int weeksPassed = 1;
+                  medicine.creationDay = weekEnd;
+                  weekEnd = weekEnd.add(Duration(days: 7 * weeksPassed));
+
+                  for (int j = 0; j < 7 * weeksPassed; j++) {
+                    String dayName = DateFormat(
+                      'EEEE',
+                    ).format(currentDay.add(Duration(days: j)));
+                    String dateName = DateFormat('MM-dd')
+                        .format(currentDay.add(Duration(days: j)));
+                    medicine.dates.add({dateName: dayName});
+                    medicine.checkboxStates
+                        .add({false: ""}); // Default to false for new days
+                  }
+                  saveMedicines(medicines);
                 }
-              }
-          
-              int displayDaysCount = 7;
-          
-              int start = medicine.days.length > displayDaysCount
-                  ? medicine.days.length - displayDaysCount
-                  : 0;
-              List<String> lastDays = medicine.days.sublist(start);
-              List<String> lastHours = medicine.hours.sublist(start);
-              List<bool> lastCheckboxStates =
-                  medicine.checkboxStates.sublist(start);
-              List.from(medicine.checkboxStates);
-              return DataRow(
-                onLongPress: () {
-                  widget.onEditPressed(context, medicine);
-                },
-                cells: [
-                  DataCell(
-                    Row(
-                      children: [
-                        Text(medicine.name),
-                      ],
-                    ),
-                  ),
-                  DataCell(
-                    Container(
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          fit: BoxFit.cover,
-                          image: medicine.imagePath != null
-                              ? FileImage(File(medicine.imagePath!))
-                              : const AssetImage('assets/1.png') as ImageProvider,
+
+                int displayDaysCount = 7;
+
+                int start = medicine.dates.length > displayDaysCount
+                    ? medicine.dates.length - displayDaysCount
+                    : 0;
+                List<Map<String, String>> lastDays =
+                    medicine.dates.sublist(start);
+                List<Map<bool, String>> lastCheckboxStates =
+                    medicine.checkboxStates.sublist(start);
+                List.from(medicine.checkboxStates);
+                return DataRow(
+                  onLongPress: () {
+                    widget.onEditPressed(context, medicine);
+                  },
+                  cells: [
+                    DataCell(
+                      Container(
+                        decoration:  BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Colors.black,
+                              width: i <= widget.medicines.length-2 ?(  widget.medicines[i].time == widget.medicines[i+1].time ?  0 :3):0, // You can adjust the width as needed
+                            ),
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          children: [
+                            ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minWidth: screenWidth * 0.15,
+                                maxWidth: screenWidth * 0.15,
+                                minHeight: 50.0,
+                                maxHeight: 150.0,
+                              ),
+                              child: AutoSizeText(
+                                medicine.name,
+                                style: const TextStyle(fontSize: 12.0),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ),
-                  DataCell(
-                    Row(
-                      children: [
-                        Text(medicine.time),
-                      ],
+                    DataCell(
+                      Container(
+                        decoration: BoxDecoration(
+                          border:  Border(
+                            bottom: BorderSide(
+                              color: Colors.black,
+                              width: i <= widget.medicines.length-2 ?(  widget.medicines[i].time == widget.medicines[i+1].time ?  0 :3):0 // You can adjust the width as needed
+                            ),
+                          ),
+                          image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: medicine.imagePath != null
+                                ? FileImage(File(medicine.imagePath!))
+                                : const AssetImage('assets/1.png')
+                                    as ImageProvider,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  ...[
-                    for (int j = 0; j < 7; j++)
-                      if (lastDays[j] == currentDayName)
-                        DataCell(
-                          Row(
+                    DataCell(
+                      Container(
+                        decoration:  BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Colors.black,
+                              width: i <= widget.medicines.length-2 ?(  widget.medicines[i].time == widget.medicines[i+1].time ?  0 :3):0 // You can adjust the width as needed
+                            ),
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 10, right: 10),
+                          child: Row(
                             children: [
-                              Checkbox(
-                                  value: lastCheckboxStates[j],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      lastHours[j] = DateFormat('hh:mm a')
-                                          .format(DateTime.now());
-                                      // print(lastHours[j]);
-                                      lastCheckboxStates[j] = value!;
-                                      for (int i = 0; i < lastDays.length; i++) {
-                                        medicine.checkboxStates[start + i] =
-                                            lastCheckboxStates[i];
-                                        medicine.hours[start + i] = lastHours[i];
-                                      }
-                                      saveMedicines(medicines);
-                                    });
-                                  }),
+                              Text(medicine.time),
                             ],
                           ),
-                        )
-                  ]
-                ],
-              );
-            }),
+                        ),
+                      ),
+                    ),
+                    ...[
+                      for (int j = 0; j < 7; j++)
+                        if (lastDays[j][lastDays[j].keys.first] ==
+                            currentDayName)
+                          DataCell(
+                            Container(decoration:  BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Colors.black,
+                              width: i <= widget.medicines.length-2 ?(  widget.medicines[i].time == widget.medicines[i+1].time ?  0 :3):0 // You can adjust the width as needed
+                            ),
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                              child: Center(
+                                child: Checkbox(
+                                    value: lastCheckboxStates[j].keys.first,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        Map<bool, String> mapAtIndex =
+                                            Map.from(lastCheckboxStates[j]);
+                                        mapAtIndex.remove(mapAtIndex.keys.first);
+                                        mapAtIndex[value!] = DateFormat('hh:mm a')
+                                            .format(DateTime.now());
+                                        lastCheckboxStates[j] = mapAtIndex;
+                                        for (int i = 0;
+                                            i < lastDays.length;
+                                            i++) {
+                                          medicine.checkboxStates[start + i] =
+                                              lastCheckboxStates[i];
+                                        }
+                                        saveMedicines(medicines);
+                                      });
+                                    }),
+                              ),
+                            ),
+                          )
+                    ]
+                  ],
+                );
+              }),
+            ),
           ),
-        );
-      
-    
+        )
+      ],
+    );
   }
 }

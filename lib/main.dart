@@ -6,7 +6,8 @@ import 'package:medicine_tracker/localization/delegation.dart';
 import 'package:medicine_tracker/localization/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:medicine_tracker/model/language_model.dart';
-import 'SplashScreen.dart';
+import 'package:medicine_tracker/personal_screen.dart';
+import 'splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
@@ -35,7 +36,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
   Future<void> _checkFirstTime() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool? isFirstTime = prefs.getBool('isFirstTime');
-    if (isFirstTime == null || isFirstTime) {
+    if (isFirstTime) {
       setState(() {
         _isFirstTime = true;
       });
@@ -49,6 +50,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
       _isFirstTime = false;
     });
   }
+
   void selectLanguage(BuildContext context, String languageCode) {
     setState(() {
       _languageSelected = true;
@@ -86,9 +88,6 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(centerTitle: true,
-      //   title: Text(Languages.of(context)!.languageSelection),
-      // ),
       body: Center(
         child: _isFirstTime
             ? Column(
@@ -102,7 +101,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const MedicineTablePage(),
+                            builder: (context) => const PersonalInfoPage(),
                           ),
                         );
                       },
@@ -115,7 +114,6 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
     );
   }
 }
-
 
 class MedicineTableApp extends StatefulWidget {
   const MedicineTableApp({super.key});
