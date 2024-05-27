@@ -321,7 +321,7 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                     },
                   ),
                   const SizedBox(height: 10),
-                  isChecked
+                  isChecked && textEditingController.text.trim().isNotEmpty
                       ? ElevatedButton(
                           onPressed: () async {
                             final String medicineName = textEditingController.text.trim();
