@@ -101,4 +101,9 @@ class LanguageEn extends Languages {
   @override
   // TODO: implement sharePDF
   String get sharePDF => "Share";
+  
+  @override
+  // TODO: implement addTime
+  String get addTime => "Add time";
+  String get stop => "Stop";
 }

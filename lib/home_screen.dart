@@ -116,6 +116,7 @@ class _MedicineTableState extends State<MedicineTable> {
               columns: _buildColumns(context),
               rows: const []),
         ),
+        
         Expanded(
           child: SingleChildScrollView(
             scrollDirection: Axis.vertical,
@@ -126,7 +127,7 @@ class _MedicineTableState extends State<MedicineTable> {
               columns: _buildColumns(context),
               rows: List.generate(widget.medicines.length, (i) {
                 Medicine medicine = widget.medicines[i];
-                
+
                 DateTime currentDay = DateTime.now();
                 DateTime weekEnd =
                     medicine.creationDay.add(const Duration(days: 7));
@@ -169,11 +170,16 @@ class _MedicineTableState extends State<MedicineTable> {
                   cells: [
                     DataCell(
                       Container(
-                        decoration:  BoxDecoration(
+                        decoration: BoxDecoration(
                           border: Border(
                             bottom: BorderSide(
                               color: Colors.black,
-                              width: i <= widget.medicines.length-2 ?(  widget.medicines[i].time == widget.medicines[i+1].time ?  0 :3):0, // You can adjust the width as needed
+                              width: i <= widget.medicines.length - 2
+                                  ? (widget.medicines[i].time ==
+                                          widget.medicines[i + 1].time
+                                      ? 0
+                                      : 3)
+                                  : 0, // You can adjust the width as needed
                             ),
                           ),
                         ),
@@ -199,11 +205,16 @@ class _MedicineTableState extends State<MedicineTable> {
                     DataCell(
                       Container(
                         decoration: BoxDecoration(
-                          border:  Border(
+                          border: Border(
                             bottom: BorderSide(
-                              color: Colors.black,
-                              width: i <= widget.medicines.length-2 ?(  widget.medicines[i].time == widget.medicines[i+1].time ?  0 :3):0 // You can adjust the width as needed
-                            ),
+                                color: Colors.black,
+                                width: i <= widget.medicines.length - 2
+                                    ? (widget.medicines[i].time ==
+                                            widget.medicines[i + 1].time
+                                        ? 0
+                                        : 3)
+                                    : 0 // You can adjust the width as needed
+                                ),
                           ),
                           image: DecorationImage(
                             fit: BoxFit.cover,
@@ -217,12 +228,17 @@ class _MedicineTableState extends State<MedicineTable> {
                     ),
                     DataCell(
                       Container(
-                        decoration:  BoxDecoration(
+                        decoration: BoxDecoration(
                           border: Border(
                             bottom: BorderSide(
-                              color: Colors.black,
-                              width: i <= widget.medicines.length-2 ?(  widget.medicines[i].time == widget.medicines[i+1].time ?  0 :3):0 // You can adjust the width as needed
-                            ),
+                                color: Colors.black,
+                                width: i <= widget.medicines.length - 2
+                                    ? (widget.medicines[i].time ==
+                                            widget.medicines[i + 1].time
+                                        ? 0
+                                        : 3)
+                                    : 0 // You can adjust the width as needed
+                                ),
                           ),
                         ),
                         alignment: Alignment.center,
@@ -241,15 +257,21 @@ class _MedicineTableState extends State<MedicineTable> {
                         if (lastDays[j][lastDays[j].keys.first] ==
                             currentDayName)
                           DataCell(
-                            Container(decoration:  BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Colors.black,
-                              width: i <= widget.medicines.length-2 ?(  widget.medicines[i].time == widget.medicines[i+1].time ?  0 :3):0 // You can adjust the width as needed
-                            ),
-                          ),
-                        ),
-                        alignment: Alignment.center,
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                      color: Colors.black,
+                                      width: i <= widget.medicines.length - 2
+                                          ? (widget.medicines[i].time ==
+                                                  widget.medicines[i + 1].time
+                                              ? 0
+                                              : 3)
+                                          : 0 // You can adjust the width as needed
+                                      ),
+                                ),
+                              ),
+                              alignment: Alignment.center,
                               child: Center(
                                 child: Checkbox(
                                     value: lastCheckboxStates[j].keys.first,
@@ -257,9 +279,12 @@ class _MedicineTableState extends State<MedicineTable> {
                                       setState(() {
                                         Map<bool, String> mapAtIndex =
                                             Map.from(lastCheckboxStates[j]);
-                                        mapAtIndex.remove(mapAtIndex.keys.first);
-                                        mapAtIndex[value!] = DateFormat('hh:mm a')
-                                            .format(DateTime.now());
+                                        mapAtIndex
+                                            .remove(mapAtIndex.keys.first);
+                                        mapAtIndex[value!] = value! == true
+                                            ? DateFormat('hh:mm a')
+                                                .format(DateTime.now())
+                                            : "";
                                         lastCheckboxStates[j] = mapAtIndex;
                                         for (int i = 0;
                                             i < lastDays.length;

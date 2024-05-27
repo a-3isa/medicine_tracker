@@ -5,12 +5,14 @@ class Medicine {
   DateTime creationDay;
   // List<String> hours;
   // List<String> days;
+  int? alarmId;
   List<Map<String, String>> dates;
   List<Map<bool, String>> checkboxStates;
 
   Medicine({
     required this.name,
     this.imagePath,
+    this.alarmId,
     required this.time,
     // required this.hours,
     required this.creationDay,
@@ -22,6 +24,7 @@ class Medicine {
   Map<String, dynamic> toJson() {
     return {
       'name': name,
+      'alarmId':alarmId,
       // 'hours': hours,
       'imagePath': imagePath,
       'checkboxStates': checkboxStates
@@ -47,6 +50,7 @@ class Medicine {
       name: json['name'],
       imagePath: json['imagePath'],
       time: json['time'],
+      alarmId:json['alarmId'],
       creationDay: DateTime.parse(json['creationDay']),
       // hours: List<String>.from(json['hours'] as List),
       checkboxStates: (json['checkboxStates'] as List)

@@ -23,58 +23,71 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     String personCase = "";
     String age = "";
     return Scaffold(
-      body: Center(
-        child: 
-             Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                    TextFormField(
-                      decoration: InputDecoration(
-                          labelText: Languages.of(context)!.name),
-                      onChanged: (value) {
-                        name = value;
-                      },
-                    ),
-                  TextFormField(
-                    decoration:
-                        InputDecoration(labelText: Languages.of(context)!.age),
-                    keyboardType: TextInputType.number,
-                    onChanged: (value) {
-                      age = value;
-                    },
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(
-                        labelText: Languages.of(context)!.personalCase),
-                    onChanged: (value) {
-                      personCase = value;
-                    },
-                  ),
-                  ElevatedButton(
-                    onPressed: () async {
-                      Personal personal = Personal(
-                        name: name,
-                        age: age,
-                        personCase: personCase,
-                      );
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextFormField(
+              decoration: InputDecoration(
+                labelText: Languages.of(context)!.name,
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.person),
+              ),
+              onChanged: (value) {
+                name = value;
+              },
+            ),
+            SizedBox(height: 16.0),
+            TextFormField(
+              decoration: InputDecoration(
+                labelText: Languages.of(context)!.age,
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.cake),
+              ),
+              keyboardType: TextInputType.number,
+              onChanged: (value) {
+                age = value;
+              },
+            ),
+            SizedBox(height: 16.0),
+            TextFormField(
+              decoration: InputDecoration(
+                labelText: Languages.of(context)!.personalCase,
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.description),
+              ),
+              onChanged: (value) {
+                personCase = value;
+              },
+            ),
+            SizedBox(height: 32.0),
+            ElevatedButton(
+              onPressed: () async {
+                Personal personal = Personal(
+                  name: name,
+                  age: age,
+                  personCase: personCase,
+                );
 
-                      personals.add(personal);
-                      // print(personal.name);
-                      // print(personal.age);
-                      // print(personal.personCase);
-
-                      await savePersonal(personals);
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MedicineTablePage(),
-                        ),
-                      );
-                    },
-                    child: Text(Languages.of(context)!.proceedToApp),
+                personals.add(personal);
+                await savePersonal(personals);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MedicineTablePage(),
                   ),
-                ],
-              )
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 16.0),
+                textStyle: TextStyle(fontSize: 18.0),
+              ),
+              child: Text(Languages.of(context)!.proceedToApp),
+            ),
+          ],
+        ),
       ),
     );
   }

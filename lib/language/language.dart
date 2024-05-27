@@ -44,4 +44,6 @@ abstract class Languages {
   String get inputBiometrics;
   String get sharePDF;
   String get menu;
+  String get addTime;
+  String get stop;
 }

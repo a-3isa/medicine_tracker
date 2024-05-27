@@ -1,3 +1,5 @@
+import 'package:alarm/alarm.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart'; // Import the date_symbol_data_local library
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:medicine_tracker/handler.dart';
@@ -7,14 +9,23 @@ import 'package:medicine_tracker/localization/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:medicine_tracker/model/language_model.dart';
 import 'package:medicine_tracker/personal_screen.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+// import 'package:timezone/data/latest.dart' as tz;
+// final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+//     FlutterLocalNotificationsPlugin();
 
 void main() async {
   await initializeDateFormatting('ar'); // Initialize Arabic locale data
+  WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  await Alarm.init();
 
   runApp(const MedicineTableApp());
 }
+
 
 class LanguageSelectionPage extends StatefulWidget {
   const LanguageSelectionPage({super.key});
@@ -30,13 +41,51 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
   @override
   void initState() {
     super.initState();
+    if (Alarm.android) {
+      checkAndroidNotificationPermission();
+      checkAndroidScheduleExactAlarmPermission();
+    }
+
     _checkFirstTime();
+  }
+  Future<void> checkAndroidNotificationPermission() async {
+    final status = await Permission.notification.status;
+    if (status.isDenied) {
+      alarmPrint('Requesting notification permission...');
+      final res = await Permission.notification.request();
+      alarmPrint(
+        'Notification permission ${res.isGranted ? '' : 'not '}granted',
+      );
+    }
+  }
+
+  Future<void> checkAndroidExternalStoragePermission() async {
+    final status = await Permission.storage.status;
+    if (status.isDenied) {
+      alarmPrint('Requesting external storage permission...');
+      final res = await Permission.storage.request();
+      alarmPrint(
+        'External storage permission ${res.isGranted ? '' : 'not'} granted',
+      );
+    }
+  }
+
+  Future<void> checkAndroidScheduleExactAlarmPermission() async {
+    final status = await Permission.scheduleExactAlarm.status;
+    alarmPrint('Schedule exact alarm permission: $status.');
+    if (status.isDenied) {
+      alarmPrint('Requesting schedule exact alarm permission...');
+      final res = await Permission.scheduleExactAlarm.request();
+      alarmPrint(
+        'Schedule exact alarm permission ${res.isGranted ? '' : 'not'} granted',
+      );
+    }
   }
 
   Future<void> _checkFirstTime() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool? isFirstTime = prefs.getBool('isFirstTime');
-    if (isFirstTime) {
+    if (isFirstTime == null || isFirstTime) {
       setState(() {
         _isFirstTime = true;
       });
@@ -129,6 +178,8 @@ class MedicineTableApp extends StatefulWidget {
 
 class _MedicineTableAppState extends State<MedicineTableApp> {
   Locale? _locale;
+
+  
 
   void setLocale(Locale locale) {
     setState(() {

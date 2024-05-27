@@ -7,13 +7,19 @@ environment:
 
 
 dependencies:
+  alarm:
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  permission_handler: ^11.1.0
   table_calendar : ^3.0.9
   shared_preferences: ^2.0.0
   mocktail: ^1.0.3
+  flutter_local_notifications: ^17.1.2
+  firebase_messaging: ^14.2.2
+  timezone: ^0.9.3
+
   syncfusion_flutter_calendar: ^25.1.39 
   image_picker: ^1.1.1
   path_provider: ^2.0.6
@@ -30,6 +36,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  very_good_analysis: ^5.1.0
 
 
 flutter:
@@ -39,3 +46,8 @@ flutter:
     - assets/1.png
     - assets/1.jpg
     - assets/NotoSans-Regular.ttf
+    - assets/mozart.mp3
+    - assets/nokia.mp3
+    - assets/one_piece.mp3
+    - assets/star_wars.mp3
+    - assets/marimba.mp3

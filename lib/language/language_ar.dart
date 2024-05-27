@@ -101,4 +101,9 @@ class LanguageAr extends Languages {
   @override
   // TODO: implement sharePDF
   String get sharePDF => "مشاركة";
+  
+  @override
+  // TODO: implement addTime
+  String get addTime => "إضافة وقت";
+  String get stop => "إيقاف";
 }
