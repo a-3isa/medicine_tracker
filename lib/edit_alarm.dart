@@ -52,22 +52,22 @@ class _ExampleAlarmEditScreenState extends State<ExampleAlarmEditScreen> {
     }
   }
 
-  String getDay() {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final difference = selectedDateTime.difference(today).inDays;
+  // String getDay() {
+  //   final now = DateTime.now();
+  //   final today = DateTime(now.year, now.month, now.day);
+  //   final difference = selectedDateTime.difference(today).inDays;
 
-    switch (difference) {
-      case 0:
-        return 'Today';
-      case 1:
-        return 'Tomorrow';
-      case 2:
-        return 'After tomorrow';
-      default:
-        return 'In $difference days';
-    }
-  }
+  //   switch (difference) {
+  //     case 0:
+  //       return 'Today';
+  //     case 1:
+  //       return 'Tomorrow';
+  //     case 2:
+  //       return 'After tomorrow';
+  //     default:
+  //       return 'In $difference days';
+  //   }
+  // }
 
   Future<void> pickTime() async {
     final res = await showTimePicker(
@@ -121,26 +121,6 @@ class _ExampleAlarmEditScreenState extends State<ExampleAlarmEditScreen> {
     });
   }
 
-  // void deleteAlarm() {
-  //   // Alarm.stop(widget.alarmSettings!.id).then((res) {
-  //   //   if (res) Navigator.pop(context, {'alarmId': null, 'success': true});
-  //   // });
-  //   selectedDateTime = DateTime.now().add(const Duration(days: 1));
-  //   // Alarm.stop(widget.alarmSettings!.id);
-  //   final alarmSettings = AlarmSettings(
-  //     id: widget.alarmSettings!.id,
-  //     dateTime: selectedDateTime,
-  //     loopAudio: loopAudio,
-  //     vibrate: vibrate,
-  //     volume: volume,
-  //     assetAudioPath: assetAudio,
-  //     notificationTitle: 'Medicine Time',
-  //     notificationBody: 'It is time to take your medicine.',
-  //     enableNotificationOnKill: Platform.isIOS,
-  //   );
-  //   Alarm.set(alarmSettings: alarmSettings);
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -175,16 +155,9 @@ class _ExampleAlarmEditScreenState extends State<ExampleAlarmEditScreen> {
               ),
             ],
           ),
-          Text(
-            getDay(),
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium!
-                .copyWith(color: Colors.blueAccent.withOpacity(0.8)),
-          ),
           RawMaterialButton(
             onPressed: pickTime,
-            fillColor: Colors.grey[200],
+            fillColor: Colors.black,
             child: Container(
               margin: const EdgeInsets.all(20),
               child: Text(
@@ -192,111 +165,10 @@ class _ExampleAlarmEditScreenState extends State<ExampleAlarmEditScreen> {
                 style: Theme.of(context)
                     .textTheme
                     .displayMedium!
-                    .copyWith(color: Colors.blueAccent),
+                    .copyWith(color: Colors.white),
               ),
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Loop alarm audio',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              Switch(
-                value: loopAudio,
-                onChanged: (value) => setState(() => loopAudio = value),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Vibrate',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              Switch(
-                value: vibrate,
-                onChanged: (value) => setState(() => vibrate = value),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Sound',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              DropdownButton(
-                value: assetAudio,
-                items: const [
-                  DropdownMenuItem<String>(
-                    value: 'assets/marimba.mp3',
-                    child: Text('Marimba'),
-                  ),
-                  DropdownMenuItem<String>(
-                    value: 'assets/nokia.mp3',
-                    child: Text('Nokia'),
-                  ),
-                  DropdownMenuItem<String>(
-                    value: 'assets/mozart.mp3',
-                    child: Text('Mozart'),
-                  ),
-                  DropdownMenuItem<String>(
-                    value: 'assets/star_wars.mp3',
-                    child: Text('Star Wars'),
-                  ),
-                  DropdownMenuItem<String>(
-                    value: 'assets/one_piece.mp3',
-                    child: Text('One Piece'),
-                  ),
-                ],
-                onChanged: (value) => setState(() => assetAudio = value!),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Custom volume',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              Switch(
-                value: volume != null,
-                onChanged: (value) =>
-                    setState(() => volume = value ? 0.5 : null),
-              ),
-            ],
-          ),
-          SizedBox(
-            height: 30,
-            child: volume != null
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Icon(
-                        volume! > 0.7
-                            ? Icons.volume_up_rounded
-                            : volume! > 0.1
-                                ? Icons.volume_down_rounded
-                                : Icons.volume_mute_rounded,
-                      ),
-                      Expanded(
-                        child: Slider(
-                          value: volume!,
-                          onChanged: (value) {
-                            setState(() => volume = value);
-                          },
-                        ),
-                      ),
-                    ],
-                  )
-                : const SizedBox(),
-          ),
-          const SizedBox(),
         ],
       ),
     );

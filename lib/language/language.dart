@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 abstract class Languages {
   static Languages? of(BuildContext context) {
@@ -45,5 +46,7 @@ abstract class Languages {
   String get sharePDF;
   String get menu;
   String get addTime;
+  String get editTime;
   String get stop;
+   pw.TextDirection get direction;
 }

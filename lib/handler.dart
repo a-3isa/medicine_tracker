@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:medicine_tracker/classes_handler.dart';
-import 'package:medicine_tracker/edit_alarm.dart';
+// import 'package:medicine_tracker/edit_alarm.dart';
 import 'package:medicine_tracker/home_screen.dart';
 import 'package:medicine_tracker/language/language.dart';
 import 'package:medicine_tracker/medicine.dart';
@@ -24,11 +24,24 @@ class MedicineTablePage extends StatefulWidget {
 class _MedicineTablePageState extends State<MedicineTablePage> {
   List<Medicine>? medicines;
   List<Biometrics>? biometricss;
+  bool loading = false;
+
   static StreamSubscription<AlarmSettings>? subscription;
   late List<AlarmSettings> alarms;
+  late DateTime selectedDateTime;
+  late bool loopAudio;
+  late bool vibrate;
+  late double? volume;
+  late String assetAudio;
+  late String notificationBody;
   @override
   void initState() {
     super.initState();
+
+    loopAudio = true;
+    vibrate = true;
+    volume = null;
+    assetAudio = 'assets/marimba.mp3';
 
     medicines = [];
     biometricss = [];
@@ -64,30 +77,6 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
     loadAlarms();
   }
 
-  Future<int?> navigateToAlarmScreen(AlarmSettings? settings,String medicineName) async {
-    final res = await showModalBottomSheet<Map<String, dynamic>>(
-      context: context,
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      builder: (context) {
-        return FractionallySizedBox(
-          heightFactor: 0.75,
-          child: ExampleAlarmEditScreen(alarmSettings: settings,medicineName:medicineName),
-        );
-      },
-    );
-
-    if (res != null && res['success'] == true) {
-      loadAlarms();
-      final alarmId = res['alarmId'];
-      return alarmId;
-    } else {
-      return null;
-    }
-  }
-
   @override
   void dispose() {
     subscription?.cancel();
@@ -118,7 +107,7 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                 leading: const Icon(Icons.share),
                 title: Text(Languages.of(context)!.sharePDF),
                 onTap: () async {
-                  final pdfFile = await PDFCreator.createPDF(
+                  final pdfFile = await PDFCreator.createPDF(context,
                       loadMedicines(), loadBiometrics(), loadPersonal());
                   sharePdf(pdfFile);
                   Navigator.of(context).pop();
@@ -151,34 +140,59 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
             : const Text(""));
   }
 
-  void onMedicineAdded(String medicineName, String? imagePath, String time,int? alarmId) {
+  (AlarmSettings, int, DateTime) buildAlarmSettings(String medicineName) {
+    final id = DateTime.now().millisecondsSinceEpoch % 10000 + 1;
+    // selectedDateTime = DateTime.now().add(const Duration(minutes: 1));
+    // selectedDateTime = selectedDateTime.copyWith(second: 0, millisecond: 0);
+
+    final alarmSettings = AlarmSettings(
+      id: id,
+      dateTime: selectedDateTime,
+      loopAudio: loopAudio,
+      vibrate: vibrate,
+      volume: volume,
+      assetAudioPath: assetAudio,
+      notificationTitle: 'Medicine Time',
+      notificationBody: 'It is time to take your $medicineName.',
+      enableNotificationOnKill: Platform.isIOS,
+    );
+    return (alarmSettings, id, selectedDateTime);
+  }
+
+  Future<(int, DateTime)> saveAlarm(String medicineName) async {
+    final (settings, id, selectedDateTime) = buildAlarmSettings(medicineName);
+    await Alarm.set(alarmSettings: settings);
+    return (id, selectedDateTime);
+  }
+
+  void onMedicineAdded(String medicineName, String? imagePath, String period,
+      int? alarmId, DateTime time) {
     setState(() {
       List<Map<bool, String>> initialCheckboxStates =
-          List.filled(7, {false: ""});
+          List.filled(1, {false: ""});
       // List<String> initialhours = List.filled(7, "");
-      final creationDay = DateTime.now();
+      DateTime creationDay = DateTime.now();
+      creationDay =
+          DateTime(creationDay.year, creationDay.month, creationDay.day);
       // List<String> days = [];
-      List<Map<String, String>> dates = [];
+      List<Map<DateTime, String>> dates = [];
 
-      for (int i = 0; i < 7; i++) {
-        DateTime date = creationDay.add(Duration(days: i));
-        String dayName = DateFormat(
-          'EEEE',
-        ).format(date);
-        // days.add(dayName);
-        dates.add({
-          DateFormat(
-            'MM-dd',
-          ).format(date): dayName
-        });
-      }
+      // for (int i = 0; i < 7; i++) {
+      // DateTime date = creationDay.add(Duration(days: 0));
+      String dayName = DateFormat(
+        'EEEE',
+      ).format(creationDay);
+      // days.add(dayName);
+      dates.add({creationDay: dayName});
+      // }
 
       final medicine = Medicine(
+        time: time,
         name: medicineName,
         imagePath: imagePath,
-        time: time,
-        creationDay: creationDay,
-        alarmId:alarmId ,
+        period: period,
+        // creationDay: creationDay,
+        alarmId: alarmId,
         // days: days,
         dates: dates, checkboxStates: initialCheckboxStates,
         // checkboxStates: initialCheckboxStates,
@@ -186,8 +200,12 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
       );
       if (medicines != null) {
         medicines!.add(medicine);
-        medicines!.sort(
-            (a, b) => _getTimeIndex(a.time).compareTo(_getTimeIndex(b.time)));
+        medicines!.sort((a, b) {
+          if (a.time.hour == b.time.hour) {
+            return a.time.minute.compareTo(b.time.minute);
+          }
+          return a.time.hour.compareTo(b.time.hour);
+        });
         saveMedicines(medicines!);
       }
     });
@@ -196,7 +214,7 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
   void onDeletePressed(Medicine medicine) {
     setState(() {
       if (medicine.alarmId != null) Alarm.stop(medicine.alarmId!);
-      
+
       medicines!.remove(medicine);
       saveMedicines(medicines!);
       // Navigator.of(context).pop();
@@ -205,40 +223,75 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
   }
 
   void onEditMedicine(Medicine medicine, String updatedMedicineName,
-      String selectedTime, String path, File? selectedImage) {
+      String selectedPeriod, File? selectedImage, DateTime selectedTime) {
     setState(() {
       medicine.name = updatedMedicineName;
-      medicine.time = selectedTime;
+      medicine.period = selectedPeriod;
+      if (medicine.time != selectedTime) {
+        medicine.time = selectedTime;
+        Alarm.stop(medicine.alarmId!).then((bool result) {
+          final editedAlarmSettings = AlarmSettings(
+            id: medicine.alarmId!,
+            dateTime: selectedDateTime,
+            loopAudio: loopAudio,
+            vibrate: vibrate,
+            volume: volume,
+            assetAudioPath: assetAudio,
+            notificationTitle: 'Medicine Time',
+            notificationBody: 'It is time to take your ${medicine.name}.',
+            enableNotificationOnKill: Platform.isIOS,
+          );
+          return Alarm.set(alarmSettings: editedAlarmSettings);
+        });
+      }
+
       if (selectedImage != null) {
         medicine.imagePath = selectedImage.path;
       }
+      medicines!.sort((a, b) {
+        if (a.time.hour == b.time.hour) {
+          return a.time.minute.compareTo(b.time.minute);
+        }
+        return a.time.hour.compareTo(b.time.hour);
+      });
       saveMedicines(medicines!);
       // Navigator.of(context).pop();
     });
   }
 
-  int _getTimeIndex(String time) {
-    final timeOptions = Languages.of(context)!.timeOptions;
-    return timeOptions.indexOf(time);
+  Future<void> pickTime(BuildContext context) async {
+    final res = await showTimePicker(
+      initialTime: TimeOfDay.fromDateTime(selectedDateTime),
+      context: context,
+    );
+    if (res != null) {
+      setState(() {
+        final now = DateTime.now();
+        selectedDateTime = now.copyWith(
+          hour: res.hour,
+          minute: res.minute,
+          second: 0,
+          millisecond: 0,
+          microsecond: 0,
+        );
+        if (selectedDateTime.isBefore(now)) {
+          selectedDateTime = selectedDateTime.add(const Duration(days: 1));
+        }
+      });
+    }
   }
-
-  // void onCheckboxChanged(int medicineIndex, int dayIndex, bool value,String time) {
-  //   setState(() {
-  //     if (medicines != null) {
-  //       medicines![medicineIndex].checkboxStates[dayIndex].keys.first = value;
-  //       saveMedicines(medicines!);
-  //     }
-  //   });
-  // }
 
   Future<void> _showAddMedicineDialog(BuildContext context) async {
     final TextEditingController textEditingController = TextEditingController();
-    bool isChecked = false;
+    // bool isChecked = false;
     int? alarmId;
+    selectedDateTime = DateTime.now().add(const Duration(minutes: 1));
+    selectedDateTime = selectedDateTime.copyWith(second: 0, millisecond: 0);
 
     File? selectedImage;
-    String time =
+    String period =
         Languages.of(context)!.timeOptions[0]; // Default selected time
+    late DateTime time;
     await showDialog<String>(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -290,10 +343,10 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                   DropdownButton<String>(
                     isExpanded: true,
                     itemHeight: 70,
-                    value: time,
+                    value: period,
                     onChanged: (String? newValue) {
                       setState(() {
-                        time = newValue!;
+                        period = newValue!;
                       });
                     },
                     items: Languages.of(context)!
@@ -301,35 +354,24 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                         .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
-                        child: Container(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 6.0),
-                            child: Text(value),
-                          ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6.0),
+                          child: Text(value),
                         ),
                       );
                     }).toList(),
                   ),
                   const SizedBox(height: 10),
-                  CheckboxListTile(
-                    value: isChecked,
-                    title: Text(Languages.of(context)!.addTime),
-                    onChanged: (bool? value) {
-                      setState(() {
-                        isChecked = value ?? false;
-                      });
-                    },
+                  ElevatedButton(
+                    onPressed: () => pickTime(context),
+                    // fillColor: Colors.black,
+                    child: Container(
+                      margin: const EdgeInsets.all(20),
+                      child: Text(
+                        Languages.of(context)!.addTime,
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 10),
-                  isChecked && textEditingController.text.trim().isNotEmpty
-                      ? ElevatedButton(
-                          onPressed: () async {
-                            final String medicineName = textEditingController.text.trim();
-                            alarmId = await navigateToAlarmScreen(null,medicineName);
-                          },
-                          child: const Icon(Icons.alarm_add_rounded, size: 33),
-                        )
-                      : Text(""),
                 ],
               ),
             ),
@@ -341,11 +383,15 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                 child: Text(Languages.of(context)!.cancel),
               ),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   final String medicineName = textEditingController.text.trim();
                   if (medicineName.isNotEmpty) {
+                    (alarmId, time) = await saveAlarm(medicineName);
+                    // print(time);
+
                     textEditingController.clear();
-                    onMedicineAdded(medicineName, selectedImage?.path, time,alarmId);
+                    onMedicineAdded(medicineName, selectedImage?.path, period,
+                        alarmId, time);
                     Navigator.of(context).pop();
                   }
                 },
@@ -363,7 +409,8 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
       BuildContext context, Medicine medicine) async {
     final TextEditingController textEditingController = TextEditingController();
     textEditingController.text = medicine.name;
-    String selectedTime = medicine.time;
+    String selectedPeriod = medicine.period;
+    selectedDateTime = medicine.time;
 
     File? selectedImage;
     if (medicine.imagePath != null) {
@@ -421,10 +468,10 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                   ),
                   const SizedBox(height: 20),
                   DropdownButtonFormField<String>(
-                    value: selectedTime,
+                    value: selectedPeriod,
                     onChanged: (String? newValue) {
                       setState(() {
-                        selectedTime = newValue!;
+                        selectedPeriod = newValue!;
                       });
                     },
                     decoration: const InputDecoration(
@@ -440,6 +487,35 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                         child: Text(value),
                       );
                     }).toList(),
+                  ),
+                  Row(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () => pickTime(context),
+                        // fillColor: Colors.black,
+                        child: Container(
+                          margin: const EdgeInsets.all(20),
+                          child: Text(
+                            Languages.of(context)!.editTime,
+                          ),
+                        ),
+                      ),
+                      Checkbox(
+                          value: medicine.checkboxStates.last.keys.first,
+                          onChanged: (value) {
+                            setState(() {
+                              // print("************");
+                              Map<bool, String> mapAtIndex =
+                                  Map.from(medicine.checkboxStates.last);
+                              mapAtIndex.remove(mapAtIndex.keys.first);
+                              mapAtIndex[value!] = value == true
+                                  ? DateFormat('hh:mm a').format(DateTime.now())
+                                  : "";
+                              medicine.checkboxStates.last = mapAtIndex;
+                              saveMedicines(medicines!);
+                            });
+                          }),
+                    ],
                   ),
                 ],
               ),
@@ -487,8 +563,8 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                   final String updatedMedicineName =
                       textEditingController.text.trim();
                   if (updatedMedicineName.isNotEmpty) {
-                    onEditMedicine(medicine, updatedMedicineName, selectedTime,
-                        selectedImage!.path, selectedImage);
+                    onEditMedicine(medicine, updatedMedicineName,
+                        selectedPeriod, selectedImage, selectedDateTime);
                     Navigator.of(context).pop();
                   }
                 },

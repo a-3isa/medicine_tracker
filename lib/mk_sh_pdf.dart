@@ -1,18 +1,29 @@
 import 'dart:io';
+// import 'package:intl/intl.dart';
+// import 'package:flutter/material.dart';
+// import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+// import 'package:printing/printing.dart';
 
+import 'package:flutter/material.dart';
+import 'package:medicine_tracker/language/language.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
+
+// import 'package:arabic_font/arabic_font.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'medicine.dart';
 
 class PDFCreator {
   static Future<pw.Font> loadFont() async {
-    final fontData = await rootBundle.load('assets/NotoSans-Regular.ttf');
+    final fontData = await rootBundle.load('assets/Cairo-Regular.ttf');
     return pw.Font.ttf(fontData);
   }
 
   static Future<XFile> createPDF(
+      BuildContext context,
       Future<List<Medicine>> medicinesFuture,
       Future<List<Biometrics>> biometricsFuture,
       Future<List<Personal>> personalsFuture) async {
@@ -39,50 +50,61 @@ class PDFCreator {
       fontSize: 10,
     );
 
-    void addContentToPage(pw.Document pdf, List<pw.Widget> content) {
-      pdf.addPage(
-        pw.Page(
-          build: (pw.Context context) {
-            return pw.Column(children: content);
-          },
-        ),
-      );
-    }
+    // void addContentToPage(pw.Document pdf, List<pw.Widget> content) {
+    //   pdf.addPage(
+    //     pw.Page(
+    //       textDirection: Languages.of(context)!.direction,
+    //       build: (pw.Context context) {
+    //         return pw.Column(children: content);
+    //       },
+    //     ),
+    //   );
+    // }
 
     List<pw.Widget> content = [
-      pw.Text('Medicine Schedule \n', style: headerStyle),
+      pw.Text(
+        'Medicine Schedule \n',
+        style: headerStyle,
+      ),
       pw.SizedBox(height: 20),
       pw.Row(children: [
         pw.Text(
-          'Name: ${personals[0].name}',
+          '${Languages.of(context)!.name}: ${personals[0].name}',
           style: personalStyle,
         ),
       ]),
       pw.Row(children: [
-        pw.Text('Age: ${personals[0].age}', style: personalStyle),
+        pw.Text(
+          '${Languages.of(context)!.age}: ${personals[0].age}',
+          style: personalStyle,
+        ),
       ]),
       pw.Row(children: [
-        pw.Text('Case: ${personals[0].personCase}', style: personalStyle),
+        pw.Text(
+            '${Languages.of(context)!.personalCase}: ${personals[0].personCase}',
+            style: personalStyle),
       ]),
-      pw.Text(
-        "------------------------------------------------------------------------------------------------------------------- \n \n",
-        style: personalStyle,
+      pw.Container(
+        height: 2,
+        width: double.infinity,
+        color: PdfColors.black,
       ),
     ];
 
-    final dayDateGroups = <String, Map<String, List<Medicine>>>{};
+    final dayDateGroups = <DateTime, Map<String, List<Medicine>>>{};
     final dateGroups = <String, List<Biometrics>>{};
 
     for (var medicine in medicines) {
       for (var dateMap in medicine.dates) {
-        dateMap.forEach((day, date) {
-          if (!dayDateGroups.containsKey(day)) {
-            dayDateGroups[day] = {};
+        dateMap.forEach((date, day) {
+          // String formattedDate = DateFormat('MM-dd').format(date);
+          if (!dayDateGroups.containsKey(date)) {
+            dayDateGroups[date] = {};
           }
-          if (!dayDateGroups[day]!.containsKey(date)) {
-            dayDateGroups[day]![date] = [];
+          if (!dayDateGroups[date]!.containsKey(day)) {
+            dayDateGroups[date]![day] = [];
           }
-          dayDateGroups[day]![date]!.add(medicine);
+          dayDateGroups[date]![day]!.add(medicine);
         });
       }
     }
@@ -94,19 +116,31 @@ class PDFCreator {
       }
       dateGroups[date]!.add(biometric);
     }
+    // print("&&&&&&&&&&");
     // print(dayDateGroups.keys);
+    // print("###########");
+    dayDateGroups.keys.expand((date) {
+      // print(date);
+      // print("^^^^^^^^^^^");
+      // print(dayDateGroups[date]!.keys);
+      // print("!!!!!!!!!!!!!!!");
 
-    dayDateGroups.keys.expand((day) {
-      return dayDateGroups[day]!.keys.map((date) {
+      return dayDateGroups[date]!.keys.map((day) {
         // print(day);
         // print(date);
-        final medicinesForDayAndDate = dayDateGroups[day]![date]!;
-        final biometricsForDate = dateGroups[day] ?? [];
+        final medicinesForDayAndDate = dayDateGroups[date]![day]!;
+        final biometricsForDate =
+            dateGroups[DateFormat('MM-dd').format(date)] ?? [];
         // print(biometricsForDate);
         // print(dateGroups);
 
         List<pw.Widget> dayDateContent = [
-          pw.Text('Day: $day - Date: $date', style: normalStyle),
+          pw.Center(
+              child: pw.Text(
+                  'Day: $day - Date: ${DateFormat('MM-dd').format(date)}',
+                  style: normalStyle,
+                  textAlign: pw.TextAlign.center)
+                  ),
           pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
@@ -122,7 +156,8 @@ class PDFCreator {
                             pw.Padding(
                               padding: const pw.EdgeInsets.all(5.0),
                               child: pw.Center(
-                                child: pw.Text('Medicine Name', style: normalStyle),
+                                child: pw.Text('Medicine Name',
+                                    style: normalStyle),
                               ),
                             ),
                             pw.Padding(
@@ -135,19 +170,25 @@ class PDFCreator {
                         ),
                         ...medicinesForDayAndDate.map((medicine) {
                           // print(medicine.dates);
-                          final timeIndex = medicine.dates.indexWhere((dateMap) => dateMap.containsKey(day));
+                          final timeIndex = medicine.dates.indexWhere(
+                              (dateMap) => dateMap.containsKey(date));
                           // print(timeIndex);
                           // print(medicine.checkboxStates[timeIndex]);
                           return pw.TableRow(
                             children: [
                               pw.Padding(
                                 padding: const pw.EdgeInsets.all(5.0),
-                                child: pw.Text(medicine.name, style: normalStyle),
+                                child:
+                                    pw.Text(medicine.name, style: normalStyle),
                               ),
                               pw.Padding(
                                 padding: const pw.EdgeInsets.all(5.0),
                                 child: pw.Text(
-                                    medicine.checkboxStates[timeIndex][medicine.checkboxStates[timeIndex].keys.first] ?? "",
+                                    medicine.checkboxStates[timeIndex][medicine
+                                            .checkboxStates[timeIndex]
+                                            .keys
+                                            .first] ??
+                                        "",
                                     style: normalStyle),
                               ),
                             ],
@@ -184,13 +225,15 @@ class PDFCreator {
                             pw.Padding(
                               padding: const pw.EdgeInsets.all(2.0),
                               child: pw.Center(
-                                child: pw.Text('Heart Rate', style: normalStyle),
+                                child:
+                                    pw.Text('Heart Rate', style: normalStyle),
                               ),
                             ),
                             pw.Padding(
                               padding: const pw.EdgeInsets.all(2.0),
                               child: pw.Center(
-                                child: pw.Text('Blood Pressure', style: normalStyle),
+                                child: pw.Text('Blood Pressure',
+                                    style: normalStyle),
                               ),
                             ),
                             pw.Padding(
@@ -213,34 +256,34 @@ class PDFCreator {
                               pw.Padding(
                                 padding: const pw.EdgeInsets.all(5.0),
                                 child: pw.Text(
-                                  biometric.time?.toString() ?? 'N/A',
-                                  style: normalStyle),
+                                    biometric.time?.toString() ?? 'N/A',
+                                    style: normalStyle),
                               ),
                               pw.Padding(
                                 padding: const pw.EdgeInsets.all(5.0),
                                 child: pw.Text(
-                                  biometric.heartRate?.toString() ?? 'N/A',
-                                  style: normalStyle),
+                                    biometric.heartRate?.toString() ?? 'N/A',
+                                    style: normalStyle),
                               ),
                               pw.Padding(
                                 padding: const pw.EdgeInsets.all(5.0),
                                 child: pw.Text(
-                                  biometric.bloodPressure != null
-                                      ? '${biometric.bloodPressure![0]}/${biometric.bloodPressure![1]}'
-                                      : 'N/A',
-                                  style: normalStyle),
+                                    biometric.bloodPressure != null
+                                        ? '${biometric.bloodPressure![0]}/${biometric.bloodPressure![1]}'
+                                        : 'N/A',
+                                    style: normalStyle),
                               ),
                               pw.Padding(
                                 padding: const pw.EdgeInsets.all(5.0),
                                 child: pw.Text(
-                                  biometric.oxygen?.toString() ?? 'N/A',
-                                  style: normalStyle),
+                                    biometric.oxygen?.toString() ?? 'N/A',
+                                    style: normalStyle),
                               ),
                               pw.Padding(
                                 padding: const pw.EdgeInsets.all(5.0),
                                 child: pw.Text(
-                                  biometric.sugar?.toString() ?? 'N/A',
-                                  style: normalStyle),
+                                    biometric.sugar?.toString() ?? 'N/A',
+                                    style: normalStyle),
                               ),
                             ],
                           );
@@ -255,19 +298,25 @@ class PDFCreator {
           pw.SizedBox(height: 20),
         ];
 
-        if (content.length + dayDateContent.length > 25) { // Adjust this value based on your page size
-          addContentToPage(pdf, content);
-          content = [];
-        }
+        // if (content.length + dayDateContent.length > 25) {
+        //   // Adjust this value based on your page size
+        //   addContentToPage(pdf, content);
+        //   content = [];
+        // }
         content.addAll(dayDateContent);
         return dayDateContent;
       });
     }).toList();
 
-    if (content.isNotEmpty) {
-      addContentToPage(pdf, content);
-    }
-
+    // if (content.isNotEmpty) {
+    //   addContentToPage(pdf, content);
+    // }
+    pdf.addPage(
+      pw.MultiPage(
+        textDirection: Languages.of(context)!.direction,
+        build: (pw.Context context) => content,
+      ),
+    );
     final dir = await getApplicationDocumentsDirectory();
     final file = File('${dir.path}/Report.pdf');
     await file.writeAsBytes(await pdf.save());

@@ -1,25 +1,24 @@
 class Medicine {
   String name;
   String? imagePath;
-  String time;
-  DateTime creationDay;
-  // List<String> hours;
-  // List<String> days;
+  String period;
+  DateTime time;
+  // DateTime creationDay;
   int? alarmId;
-  List<Map<String, String>> dates;
+  List<Map<DateTime, String>> dates;
   List<Map<bool, String>> checkboxStates;
 
   Medicine({
     required this.name,
     this.imagePath,
     this.alarmId,
+    required this.period,
     required this.time,
-    // required this.hours,
-    required this.creationDay,
-    required this.checkboxStates,
-    // required this.days,
-    required this.dates,
-  });
+    // required this.creationDay,
+    List<Map<bool, String>>? checkboxStates,
+    List<Map<DateTime, String>>? dates,
+  }) : dates = dates ?? [],
+        checkboxStates = checkboxStates ?? [];
 
   Map<String, dynamic> toJson() {
     return {
@@ -33,36 +32,33 @@ class Medicine {
           .toList(),
       // 'days': days,
       'dates': dates
-          .map((date) => date.map((key, value) => MapEntry(key, value)))
+          .map((date) => date.map((key, value) => MapEntry(key.toIso8601String(), value)))
           .toList(),
-      'time': time,
-      'creationDay': creationDay.toIso8601String(),
+      'period': period,'time':time.toIso8601String(),
+      // 'creationDay': creationDay.toIso8601String(),
     };
   }
 
   @override
   String toString() {
-    return 'Medicine(name: $name, time: $time, check: $checkboxStates ), dates: $dates';
+    return 'Medicine(name: $name, time: $period, check: $checkboxStates ), dates: $dates';
   }
 
   factory Medicine.fromJson(Map<String, dynamic> json) {
     return Medicine(
       name: json['name'],
       imagePath: json['imagePath'],
-      time: json['time'],
+      period: json['period'],
       alarmId:json['alarmId'],
-      creationDay: DateTime.parse(json['creationDay']),
-      // hours: List<String>.from(json['hours'] as List),
+      // creationDay: DateTime.parse(json['creationDay']),
+      time: DateTime.parse(json['time']),
       checkboxStates: (json['checkboxStates'] as List)
-          .map((item) => (item as Map)
+          .map((item) => (item as Map<String, dynamic>)
               .map((key, value) => MapEntry(key == 'true', value as String)))
           .toList(),
-      // days: List<String>.from(json['days'] as List),
-      dates: (json['dates'] as List).map((dateMap) {
-        return (dateMap as Map).map((key, value) {
-          return MapEntry(key as String, value as String);
-        });
-      }).toList(),
+      dates: (json['dates'] as List).map((dateMap) =>
+          (dateMap as Map<String, dynamic>).map((key, value) =>
+              MapEntry(DateTime.parse(key), value as String))).toList(),
     );
   }
 }

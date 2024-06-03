@@ -1,4 +1,6 @@
 import 'package:intl/intl.dart';
+import 'package:pdf/widgets.dart' as pw;
+
 
 import 'language.dart';
 
@@ -105,5 +107,10 @@ class LanguageAr extends Languages {
   @override
   // TODO: implement addTime
   String get addTime => "إضافة وقت";
+  String get editTime => "تعديل وقت";
   String get stop => "إيقاف";
+
+  @override
+  pw.TextDirection get direction => pw.TextDirection.rtl;
+
 }

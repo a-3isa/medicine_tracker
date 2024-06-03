@@ -15,11 +15,13 @@ dependencies:
   permission_handler: ^11.1.0
   table_calendar : ^3.0.9
   shared_preferences: ^2.0.0
+  printing: ^5.7.2
+
   mocktail: ^1.0.3
   flutter_local_notifications: ^17.1.2
   firebase_messaging: ^14.2.2
   timezone: ^0.9.3
-
+  arabic_font: ^0.0.9
   syncfusion_flutter_calendar: ^25.1.39 
   image_picker: ^1.1.1
   path_provider: ^2.0.6
@@ -46,6 +48,8 @@ flutter:
     - assets/1.png
     - assets/1.jpg
     - assets/NotoSans-Regular.ttf
+    - assets/Cairo-Regular.ttf
+    - assets/NotoSansArabic-Regular.ttf
     - assets/mozart.mp3
     - assets/nokia.mp3
     - assets/one_piece.mp3
