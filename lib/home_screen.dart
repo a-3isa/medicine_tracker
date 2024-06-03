@@ -35,7 +35,7 @@ class _MedicineTableState extends State<MedicineTable> {
           label: SizedBox(
         width: column1Width,
         child: Text(
-          Languages.of(context)!.medicineColumn,
+          Languages.of(context)!.medicineColumn,textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: fontSize, // Adjust the font size as needed
           ),
@@ -56,7 +56,7 @@ class _MedicineTableState extends State<MedicineTable> {
           label: SizedBox(
         width: column3Width,
         child: Text(
-          Languages.of(context)!.timeColumn,
+          Languages.of(context)!.timeColumn,textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: fontSize, // Adjust the font size as needed
           ),
@@ -69,7 +69,7 @@ class _MedicineTableState extends State<MedicineTable> {
           '${Languages.of(context)!.currentDayName}\n ${Languages.of(context)!.currentDate}',
           style: TextStyle(
             fontSize: fontSize, // Adjust the font size as needed
-          ),
+          ),textAlign: TextAlign.center,
         ),
       )),
     ];
@@ -82,14 +82,14 @@ class _MedicineTableState extends State<MedicineTable> {
     double screenWidth = MediaQuery.of(context).size.width;
     List<Medicine>? medicines = widget.medicines;
 
-    return Column(
+    return medicines.isNotEmpty ? Column(
       children: [
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: DataTable(
               dataRowMaxHeight: 0,
               columnSpacing: 9,
-              headingRowHeight: 50,
+              headingRowHeight: 70,
               columns: _buildColumns(context),
               rows: const []),
         ),
@@ -98,7 +98,7 @@ class _MedicineTableState extends State<MedicineTable> {
             scrollDirection: Axis.vertical,
             child: DataTable(
               dataRowMaxHeight: 100,
-              columnSpacing: 0,
+              columnSpacing: 9,
               headingRowHeight: 0,
               columns: _buildColumns(context),
               rows: List.generate(widget.medicines.length, (i) {
@@ -153,7 +153,7 @@ class _MedicineTableState extends State<MedicineTable> {
                               child: Padding(
                                 padding: const EdgeInsets.only(top: 10.0),
                                 child: AutoSizeText(
-                                  medicine.name,
+                                  medicine.name,textAlign: TextAlign.center,
                                   style: const TextStyle(fontSize: 12.0),
                                 ),
                               ),
@@ -209,7 +209,7 @@ class _MedicineTableState extends State<MedicineTable> {
                             children: [
                               Text(
                                 medicine.period,
-                                textAlign: TextAlign.center,
+                                textAlign: TextAlign.center,style: const TextStyle(fontSize: 12.0)
                               ),
                                Padding(
                                  padding: const EdgeInsets.only(top:8.0,bottom: 8),
@@ -219,7 +219,7 @@ class _MedicineTableState extends State<MedicineTable> {
                                          color: Colors.black,
                                        ),
                                ),
-                              Text(DateFormat('hh:mm a').format(medicine.time))
+                              Text(DateFormat('hh:mm a').format(medicine.time),style: const TextStyle(fontSize: 12.0))
                             ],
                           ),
                         ),
@@ -269,6 +269,6 @@ class _MedicineTableState extends State<MedicineTable> {
           ),
         )
       ],
-    );
+    ) : Text("");
   }
 }
