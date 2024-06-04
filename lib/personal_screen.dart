@@ -32,37 +32,37 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
             TextFormField(
               decoration: InputDecoration(
                 labelText: Languages.of(context)!.name,
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.person),
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.person),
               ),
               onChanged: (value) {
                 name = value;
               },
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             TextFormField(
               decoration: InputDecoration(
                 labelText: Languages.of(context)!.age,
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.cake),
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.cake),
               ),
               keyboardType: TextInputType.number,
               onChanged: (value) {
                 age = value;
               },
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             TextFormField(
               decoration: InputDecoration(
                 labelText: Languages.of(context)!.personalCase,
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.description),
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.description),
               ),
               onChanged: (value) {
                 personCase = value;
               },
             ),
-            SizedBox(height: 32.0),
+            const SizedBox(height: 32.0),
             ElevatedButton(
               onPressed: () async {
                 Personal personal = Personal(
@@ -81,8 +81,8 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                textStyle: TextStyle(fontSize: 18.0),
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                textStyle: const TextStyle(fontSize: 18.0),
               ),
               child: Text(Languages.of(context)!.proceedToApp),
             ),

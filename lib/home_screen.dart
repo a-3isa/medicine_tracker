@@ -77,8 +77,6 @@ class _MedicineTableState extends State<MedicineTable> {
 
   @override
   Widget build(BuildContext context) {
-    bool checked = false ;
-
     double screenWidth = MediaQuery.of(context).size.width;
     List<Medicine>? medicines = widget.medicines;
 
@@ -269,6 +267,6 @@ class _MedicineTableState extends State<MedicineTable> {
           ),
         )
       ],
-    ) : Text("");
+    ) : const Text("");
   }
 }

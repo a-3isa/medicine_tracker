@@ -139,8 +139,7 @@ class PDFCreator {
               child: pw.Text(
                   'Day: $day - Date: ${DateFormat('MM-dd').format(date)}',
                   style: normalStyle,
-                  textAlign: pw.TextAlign.center)
-                  ),
+                  textAlign: pw.TextAlign.center)),
           pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
@@ -301,9 +300,16 @@ class PDFCreator {
         // if (content.length + dayDateContent.length > 25) {
         //   // Adjust this value based on your page size
         //   addContentToPage(pdf, content);
-        //   content = [];
         // }
         content.addAll(dayDateContent);
+        pdf.addPage(
+          pw.MultiPage(
+            textDirection: Languages.of(context)!.direction,
+            build: (pw.Context context) => content,
+          ),
+        );
+        content = [];
+
         return dayDateContent;
       });
     }).toList();
@@ -311,12 +317,7 @@ class PDFCreator {
     // if (content.isNotEmpty) {
     //   addContentToPage(pdf, content);
     // }
-    pdf.addPage(
-      pw.MultiPage(
-        textDirection: Languages.of(context)!.direction,
-        build: (pw.Context context) => content,
-      ),
-    );
+
     final dir = await getApplicationDocumentsDirectory();
     final file = File('${dir.path}/Report.pdf');
     await file.writeAsBytes(await pdf.save());

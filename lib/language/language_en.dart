@@ -11,7 +11,7 @@ class LanguageEn extends Languages {
   String get currentDate => DateFormat('MM/dd' ).format(DateTime.now());
 
   @override
-  String get selectLanguage => "Select your language";
+  String get selectLanguage => "English";
 
   @override
   String get timeColumn => "Time";
@@ -92,24 +92,24 @@ class LanguageEn extends Languages {
   String get personalCase => "Case";
   
   @override
-  // TODO: implement inputBiometrics
   String get inputBiometrics => "Input Biometrics";
   
   @override
-  // TODO: implement menu
   String get menu => "Menu";
   
   @override
-  // TODO: implement sharePDF
   String get sharePDF => "Share";
   
   @override
-  // TODO: implement addTime
   String get addTime => "Add time";
+  @override
   String get editTime => "Edit time";
+  @override
   String get stop => "Stop";
   
   @override
-  // TODO: implement direction
   pw.TextDirection get direction => pw.TextDirection.ltr;
+  
+  @override
+  String get editProfile => "ُEdit Profile";
 }

@@ -47,6 +47,7 @@ abstract class Languages {
   String get menu;
   String get addTime;
   String get editTime;
+  String get editProfile;
   String get stop;
    pw.TextDirection get direction;
 }

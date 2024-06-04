@@ -12,17 +12,12 @@ import 'package:medicine_tracker/personal_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-// import 'package:timezone/data/latest.dart' as tz;
-// final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-//     FlutterLocalNotificationsPlugin();
 
 void main() async {
   await initializeDateFormatting('ar'); // Initialize Arabic locale data
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await Alarm.init();
-
   runApp(const MedicineTableApp());
 }
 
@@ -36,7 +31,7 @@ class LanguageSelectionPage extends StatefulWidget {
 
 class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
   bool _isFirstTime = false;
-  bool _languageSelected = false;
+  // bool _languageSelected = false;
 
   @override
   void initState() {
@@ -100,11 +95,11 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
     });
   }
 
-  void selectLanguage(BuildContext context, String languageCode) {
-    setState(() {
-      _languageSelected = true;
-    });
-  }
+  // void selectLanguage(BuildContext context, String languageCode) {
+  //   setState(() {
+  //     _languageSelected = true;
+  //   });
+  // }
 
   Widget _createLanguageDropDown() {
     return DropdownButton<LanguageModel>(
@@ -112,7 +107,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
       hint: Text(Languages.of(context)!.selectLanguage),
       onChanged: (LanguageModel? language) {
         changeLanguage(context, language!.languageCode);
-        selectLanguage(context, language.languageCode);
+        // selectLanguage(context, language.languageCode);
       },
       items: LanguageModel.languageList()
           .map<DropdownMenuItem<LanguageModel>>(
@@ -143,7 +138,7 @@ class _LanguageSelectionPageState extends State<LanguageSelectionPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _createLanguageDropDown(),
-                  if (_languageSelected)
+                  // if (_languageSelected)
                     ElevatedButton(
                       onPressed: () async {
                         await _setLanguageChosen();

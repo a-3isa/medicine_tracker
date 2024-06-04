@@ -12,7 +12,7 @@ class LanguageAr extends Languages {
   String get currentDate => DateFormat('MM/dd','ar' ).format(DateTime.now());
 
   @override
-  String get selectLanguage => "اختر لغتك";
+  String get selectLanguage => "العربية";
 
   @override
   String get timeColumn =>'الوقت';
@@ -93,24 +93,25 @@ class LanguageAr extends Languages {
   String get personalCase => "الحالة";
   
   @override
-  // TODO: implement inputBiometrics
   String get inputBiometrics => "أضف القياسات الحيوية";
   
   @override
-  // TODO: implement menu
   String get menu => "القائمة";
   
   @override
-  // TODO: implement sharePDF
   String get sharePDF => "مشاركة";
   
   @override
-  // TODO: implement addTime
   String get addTime => "إضافة وقت";
+  @override
   String get editTime => "تعديل وقت";
+  @override
   String get stop => "إيقاف";
 
   @override
   pw.TextDirection get direction => pw.TextDirection.rtl;
+  
+  @override
+  String get editProfile => "تعديل البيانات الشخصية";
 
 }

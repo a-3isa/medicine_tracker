@@ -22,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
       });
     }));
 
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 2), () {
       Navigator.pushReplacement(context,
           MaterialPageRoute(builder: ((context) =>  const LanguageSelectionPage())));
     });
@@ -41,11 +41,11 @@ class _SplashScreenState extends State<SplashScreen> {
               children: [
                 AnimatedPadding(
                   padding: EdgeInsets.only(top: isAnimate ? 40 : 0),
-                  duration:const  Duration(seconds: 3),
+                  duration:const  Duration(seconds: 1),
                   curve: Curves.easeInOutCubicEmphasized,
                   child: AnimatedOpacity(
                     opacity: isAnimate ? 0 : 1,
-                    duration:const Duration(seconds: 2),
+                    duration:const Duration(seconds: 1),
                     curve: Curves.easeInCubic,
                     child:const CircleAvatar(
                       backgroundColor: Colors.transparent,
@@ -59,11 +59,11 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
                 AnimatedPadding(
                   padding: EdgeInsets.only(top: isAnimate ? 40 : 0),
-                  duration:const Duration(seconds: 3),
+                  duration:const Duration(seconds: 1),
                   curve: Curves.easeInOutCubicEmphasized,
                   child: AnimatedOpacity(
                     opacity: isAnimate ? 0 : 1,
-                    duration:const Duration(seconds: 2),
+                    duration:const Duration(seconds: 1),
                     curve: Curves.easeInCubic,
                     child: const Text(
                       "Medicine Tracker",
