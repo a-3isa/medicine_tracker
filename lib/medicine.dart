@@ -1,20 +1,21 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 class Medicine {
   String name;
-  String? imagePath;
+  Uint8List? image;
   String period;
   DateTime time;
-  // DateTime creationDay;
   int? alarmId;
   List<Map<DateTime, String>> dates;
   List<Map<bool, String>> checkboxStates;
 
   Medicine({
     required this.name,
-    this.imagePath,
+    this.image,
     this.alarmId,
     required this.period,
     required this.time,
-    // required this.creationDay,
     List<Map<bool, String>>? checkboxStates,
     List<Map<DateTime, String>>? dates,
   }) : dates = dates ?? [],
@@ -24,18 +25,15 @@ class Medicine {
     return {
       'name': name,
       'alarmId':alarmId,
-      // 'hours': hours,
-      'imagePath': imagePath,
+      'image': image != null ? base64Encode(image!) : null,
       'checkboxStates': checkboxStates
           .map(
               (map) => map.map((key, value) => MapEntry(key.toString(), value)))
           .toList(),
-      // 'days': days,
       'dates': dates
           .map((date) => date.map((key, value) => MapEntry(key.toIso8601String(), value)))
           .toList(),
       'period': period,'time':time.toIso8601String(),
-      // 'creationDay': creationDay.toIso8601String(),
     };
   }
 
@@ -47,10 +45,9 @@ class Medicine {
   factory Medicine.fromJson(Map<String, dynamic> json) {
     return Medicine(
       name: json['name'],
-      imagePath: json['imagePath'],
+      image: json['image'] != null ? base64Decode(json['image']) : null,
       period: json['period'],
       alarmId:json['alarmId'],
-      // creationDay: DateTime.parse(json['creationDay']),
       time: DateTime.parse(json['time']),
       checkboxStates: (json['checkboxStates'] as List)
           .map((item) => (item as Map<String, dynamic>)

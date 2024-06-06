@@ -176,8 +176,8 @@ class _MedicineTableState extends State<MedicineTable> {
                           ),
                           image: DecorationImage(
                             fit: BoxFit.cover,
-                            image: medicine.imagePath != null
-                                ? FileImage(File(medicine.imagePath!))
+                            image: medicine.image != null
+                                ? MemoryImage(medicine.image!)
                                 : const AssetImage('assets/1.png')
                                     as ImageProvider,
                           ),

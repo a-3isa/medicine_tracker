@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:alarm/alarm.dart';
 import 'package:alarm/model/alarm_settings.dart';
@@ -172,7 +173,7 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
     return (id, selectedDateTime);
   }
 
-  void onMedicineAdded(String medicineName, String? imagePath, String period,
+  void onMedicineAdded(String medicineName, Uint8List? image, String period,
       int? alarmId, DateTime time) {
     setState(() {
       List<Map<bool, String>> initialCheckboxStates =
@@ -196,7 +197,7 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
       final medicine = Medicine(
         time: time,
         name: medicineName,
-        imagePath: imagePath,
+        image: image,
         period: period,
         // creationDay: creationDay,
         alarmId: alarmId,
@@ -230,7 +231,7 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
   }
 
   void onEditMedicine(Medicine medicine, String updatedMedicineName,
-      String selectedPeriod, File? selectedImage, DateTime selectedTime) {
+      String selectedPeriod, Uint8List? imageBytes, DateTime selectedTime) {
     setState(() {
       medicine.name = updatedMedicineName;
       medicine.period = selectedPeriod;
@@ -252,8 +253,8 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
         });
       }
 
-      if (selectedImage != null) {
-        medicine.imagePath = selectedImage.path;
+      if (imageBytes != null) {
+        medicine.image = imageBytes;
       }
       medicines!.sort((a, b) {
         if (a.time.hour == b.time.hour) {
@@ -296,6 +297,7 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
     selectedDateTime = selectedDateTime.copyWith(second: 0, millisecond: 0);
 
     File? selectedImage;
+    Uint8List? imageBytes ;
     String period =
         Languages.of(context)!.timeOptions[0]; // Default selected time
     late DateTime time;
@@ -304,7 +306,7 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            title: Text(Languages.of(context)!.addMedicine),
+            title: Text(Languages.of(context)!.addMedicine ,style: const TextStyle(fontWeight: FontWeight.bold)),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -339,8 +341,9 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                           await picker.pickImage(source: ImageSource.gallery);
 
                       if (pickedFile != null) {
-                        setState(() {
+                        setState(() async {
                           selectedImage = File(pickedFile.path);
+                          imageBytes = await selectedImage!.readAsBytes();
                         });
                       }
                     },
@@ -397,7 +400,7 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                     // print(time);
 
                     textEditingController.clear();
-                    onMedicineAdded(medicineName, selectedImage?.path, period,
+                    onMedicineAdded(medicineName, imageBytes, period,
                         alarmId, time);
                     Navigator.of(context).pop();
                   }
@@ -420,8 +423,9 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
     selectedDateTime = medicine.time;
 
     File? selectedImage;
-    if (medicine.imagePath != null) {
-      selectedImage = File(medicine.imagePath!);
+    Uint8List? image;
+    if (medicine.image != null) {
+      image = medicine.image!;
     }
 
     await showDialog<String>(
@@ -461,8 +465,9 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                           await picker.pickImage(source: ImageSource.gallery);
 
                       if (pickedFile != null) {
-                        setState(() {
+                        setState(() async {
                           selectedImage = File(pickedFile.path);
+                          image = await selectedImage!.readAsBytes();
                         });
                       }
                     },
@@ -571,7 +576,7 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                       textEditingController.text.trim();
                   if (updatedMedicineName.isNotEmpty) {
                     onEditMedicine(medicine, updatedMedicineName,
-                        selectedPeriod, selectedImage, selectedDateTime);
+                        selectedPeriod, image, selectedDateTime);
                     Navigator.of(context).pop();
                   }
                 },
@@ -718,7 +723,7 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
       builder: (context) {
         return AlertDialog(
           title: Text(
-            Languages.of(context)!.enterBiometrics,
+            Languages.of(context)!.editProfile,
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           content: SingleChildScrollView(

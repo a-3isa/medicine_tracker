@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 // import 'package:intl/intl.dart';
 // import 'package:flutter/material.dart';
 // import 'package:flutter/widgets.dart';
@@ -37,17 +38,17 @@ class PDFCreator {
 
     pw.TextStyle headerStyle = pw.TextStyle(
       font: headerFont,
-      fontSize: 24,
+      fontSize: 10,
       fontWeight: pw.FontWeight.bold,
     );
     pw.TextStyle personalStyle = pw.TextStyle(
       font: headerFont,
-      fontSize: 13,
+      fontSize: 8,
       fontWeight: pw.FontWeight.bold,
     );
     pw.TextStyle normalStyle = pw.TextStyle(
       font: normalFont,
-      fontSize: 10,
+      fontSize: 8,
     );
 
     // void addContentToPage(pw.Document pdf, List<pw.Widget> content) {
@@ -62,11 +63,13 @@ class PDFCreator {
     // }
 
     List<pw.Widget> content = [
-      pw.Text(
-        'Medicine Schedule \n',
-        style: headerStyle,
+      pw.Center(
+        child: pw.Text(
+          'Medicine Schedule \n',
+          style: headerStyle,
+        ),
       ),
-      pw.SizedBox(height: 20),
+      pw.SizedBox(height: 10),
       pw.Row(children: [
         pw.Text(
           '${Languages.of(context)!.name}: ${personals[0].name}',
@@ -90,6 +93,12 @@ class PDFCreator {
         color: PdfColors.black,
       ),
     ];
+    // pdf.addPage(
+    //   pw.MultiPage(
+    //     textDirection: Languages.of(context)!.direction,
+    //     build: (pw.Context context) => content,
+    //   ),
+    // );
 
     final dayDateGroups = <DateTime, Map<String, List<Medicine>>>{};
     final dateGroups = <String, List<Biometrics>>{};
@@ -116,24 +125,13 @@ class PDFCreator {
       }
       dateGroups[date]!.add(biometric);
     }
-    // print("&&&&&&&&&&");
-    // print(dayDateGroups.keys);
-    // print("###########");
     dayDateGroups.keys.expand((date) {
-      // print(date);
-      // print("^^^^^^^^^^^");
-      // print(dayDateGroups[date]!.keys);
-      // print("!!!!!!!!!!!!!!!");
-
       return dayDateGroups[date]!.keys.map((day) {
-        // print(day);
-        // print(date);
         final medicinesForDayAndDate = dayDateGroups[date]![day]!;
         final biometricsForDate =
             dateGroups[DateFormat('MM-dd').format(date)] ?? [];
-        // print(biometricsForDate);
-        // print(dateGroups);
-
+        // final maxLength =
+        //     max(medicinesForDayAndDate.length, biometricsForDate.length);
         List<pw.Widget> dayDateContent = [
           pw.Center(
               child: pw.Text(
@@ -148,68 +146,14 @@ class PDFCreator {
                 child: pw.Column(
                   children: [
                     pw.Table(
-                      border: pw.TableBorder.all(),
-                      children: [
-                        pw.TableRow(
-                          children: [
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(5.0),
-                              child: pw.Center(
-                                child: pw.Text('Medicine Name',
-                                    style: normalStyle),
-                              ),
-                            ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(5.0),
-                              child: pw.Center(
-                                child: pw.Text('Time', style: normalStyle),
-                              ),
-                            ),
-                          ],
-                        ),
-                        ...medicinesForDayAndDate.map((medicine) {
-                          // print(medicine.dates);
-                          final timeIndex = medicine.dates.indexWhere(
-                              (dateMap) => dateMap.containsKey(date));
-                          // print(timeIndex);
-                          // print(medicine.checkboxStates[timeIndex]);
-                          return pw.TableRow(
-                            children: [
-                              pw.Padding(
-                                padding: const pw.EdgeInsets.all(5.0),
-                                child:
-                                    pw.Text(medicine.name, style: normalStyle),
-                              ),
-                              pw.Padding(
-                                padding: const pw.EdgeInsets.all(5.0),
-                                child: pw.Text(
-                                    medicine.checkboxStates[timeIndex][medicine
-                                            .checkboxStates[timeIndex]
-                                            .keys
-                                            .first] ??
-                                        "",
-                                    style: normalStyle),
-                              ),
-                            ],
-                          );
-                        }),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              pw.SizedBox(width: 10),
-              // Biometrics Table
-              pw.Expanded(
-                child: pw.Column(
-                  children: [
-                    pw.Table(
                       columnWidths: {
                         0: const pw.FixedColumnWidth(200),
                         1: const pw.FixedColumnWidth(200),
                         2: const pw.FixedColumnWidth(200),
                         3: const pw.FixedColumnWidth(200),
                         4: const pw.FixedColumnWidth(200),
+                        5: const pw.FixedColumnWidth(200),
+                        6: const pw.FixedColumnWidth(200),
                       },
                       border: pw.TableBorder.all(),
                       children: [
@@ -218,75 +162,52 @@ class PDFCreator {
                             pw.Padding(
                               padding: const pw.EdgeInsets.all(2.0),
                               child: pw.Center(
-                                child: pw.Text('Time', style: normalStyle),
+                                child: pw.Text('Medicine Name',
+                                    style: normalStyle),
                               ),
                             ),
                             pw.Padding(
                               padding: const pw.EdgeInsets.all(2.0),
+                              child: pw.Center(
+                                child: pw.Text('Time', style: normalStyle),
+                              ),
+                            ),
+                            // if (biometricsForDate.isNotEmpty) ...[
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(1.0),
                               child: pw.Center(
                                 child:
                                     pw.Text('Heart Rate', style: normalStyle),
                               ),
                             ),
                             pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
+                              padding: const pw.EdgeInsets.all(1.0),
                               child: pw.Center(
                                 child: pw.Text('Blood Pressure',
                                     style: normalStyle),
                               ),
                             ),
                             pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
+                              padding: const pw.EdgeInsets.all(1.0),
                               child: pw.Center(
                                 child: pw.Text('Oxygen', style: normalStyle),
                               ),
                             ),
                             pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
+                              padding: const pw.EdgeInsets.all(1.0),
                               child: pw.Center(
                                 child: pw.Text('Sugar', style: normalStyle),
                               ),
                             ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(1.0),
+                              child: pw.Center(
+                                child: pw.Text('Time', style: normalStyle),
+                              ),
+                            )
                           ],
+                          // ],
                         ),
-                        ...biometricsForDate.map((biometric) {
-                          return pw.TableRow(
-                            children: [
-                              pw.Padding(
-                                padding: const pw.EdgeInsets.all(5.0),
-                                child: pw.Text(
-                                    biometric.time?.toString() ?? 'N/A',
-                                    style: normalStyle),
-                              ),
-                              pw.Padding(
-                                padding: const pw.EdgeInsets.all(5.0),
-                                child: pw.Text(
-                                    biometric.heartRate?.toString() ?? 'N/A',
-                                    style: normalStyle),
-                              ),
-                              pw.Padding(
-                                padding: const pw.EdgeInsets.all(5.0),
-                                child: pw.Text(
-                                    biometric.bloodPressure != null
-                                        ? '${biometric.bloodPressure![0]}/${biometric.bloodPressure![1]}'
-                                        : 'N/A',
-                                    style: normalStyle),
-                              ),
-                              pw.Padding(
-                                padding: const pw.EdgeInsets.all(5.0),
-                                child: pw.Text(
-                                    biometric.oxygen?.toString() ?? 'N/A',
-                                    style: normalStyle),
-                              ),
-                              pw.Padding(
-                                padding: const pw.EdgeInsets.all(5.0),
-                                child: pw.Text(
-                                    biometric.sugar?.toString() ?? 'N/A',
-                                    style: normalStyle),
-                              ),
-                            ],
-                          );
-                        }),
                       ],
                     ),
                   ],
@@ -294,30 +215,136 @@ class PDFCreator {
               ),
             ],
           ),
-          pw.SizedBox(height: 20),
-        ];
+          pw.ListView.builder(
+              itemCount:
+                  max(medicinesForDayAndDate.length, biometricsForDate.length),
+              itemBuilder: (context, index) {
+                final medicine = index < medicinesForDayAndDate.length
+                    ? medicinesForDayAndDate[index]
+                    : medicinesForDayAndDate[0];
+                final timeIndex = medicine.dates
+                    .indexWhere((dateMap) => dateMap.containsKey(date));
 
-        // if (content.length + dayDateContent.length > 25) {
-        //   // Adjust this value based on your page size
-        //   addContentToPage(pdf, content);
-        // }
-        content.addAll(dayDateContent);
-        pdf.addPage(
-          pw.MultiPage(
-            textDirection: Languages.of(context)!.direction,
-            build: (pw.Context context) => content,
+                final biometric = index < biometricsForDate.length
+                    ? biometricsForDate[index]
+                    : null;
+
+                return pw.Column(children: [
+                  pw.Table(
+                      columnWidths: {
+                        0: const pw.FixedColumnWidth(200),
+                        1: const pw.FixedColumnWidth(200),
+                        2: const pw.FixedColumnWidth(200),
+                        3: const pw.FixedColumnWidth(200),
+                        4: const pw.FixedColumnWidth(200),
+                        5: const pw.FixedColumnWidth(200),
+                        6: const pw.FixedColumnWidth(200),
+                      },
+                      border: pw.TableBorder.all(),
+                      children: [
+                        pw.TableRow(
+                          children: [
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(2.0),
+                              child: pw.Center(
+                                child:
+                                    pw.Text(medicine.name, style: normalStyle),
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(2.0),
+                              child: pw.Center(
+                                child: pw.Text(
+                                    medicine.checkboxStates[timeIndex][medicine
+                                            .checkboxStates[timeIndex]
+                                            .keys
+                                            .first] ??
+                                        "",
+                                    style: normalStyle),
+                              ),
+                            ),
+                            // if (biometricsForDate.isNotEmpty &&
+                            //     biometric != null) ...[
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(2.0),
+                              child: pw.Center(
+                                child: pw.Text(
+                                    biometric?.heartRate?.toString() ?? '',
+                                    style: normalStyle),
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(2.0),
+                              child: pw.Center(
+                                child: pw.Text(
+                                    biometric?.bloodPressure != null
+                                        ? '${biometric?.bloodPressure![0]}/${biometric?.bloodPressure![1]}'
+                                        : '',
+                                    style: normalStyle),
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(2.0),
+                              child: pw.Center(
+                                child: pw.Text(
+                                    biometric?.oxygen?.toString() ?? '',
+                                    style: normalStyle),
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(2.0),
+                              child: pw.Center(
+                                child: pw.Text(
+                                    biometric?.sugar?.toString() ?? '',
+                                    style: normalStyle),
+                              ),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(2.0),
+                              child: pw.Center(
+                                child: pw.Text(
+                                    biometric?.time?.toString() ?? '',
+                                    style: normalStyle),
+                              ),
+                            )
+                          ],
+                          // ],
+                        )
+                      ])
+                ]);
+              }),
+          pw.SizedBox(
+            child: pw.Padding(
+              padding: const pw.EdgeInsets.all(5),
+              child: pw
+                  .Container(), // Add a child widget inside the Padding if needed
+            ),
           ),
-        );
-        content = [];
+          pw.Container(
+            height: 2,
+            width: double.infinity,
+            color: PdfColors.red,
+          ),
+          pw.SizedBox(
+            child: pw.Padding(
+              padding: const pw.EdgeInsets.all(5),
+              child: pw
+                  .Container(), // Add a child widget inside the Padding if needed
+            ),
+          ),
+        ];
+        content.addAll(dayDateContent);
 
         return dayDateContent;
       });
     }).toList();
-
-    // if (content.isNotEmpty) {
-    //   addContentToPage(pdf, content);
-    // }
-
+    pdf.addPage(
+      pw.MultiPage(
+        margin: const pw.EdgeInsets.all(5),
+        textDirection: Languages.of(context)!.direction,
+        build: (pw.Context context) => content,
+      ),
+    );
     final dir = await getApplicationDocumentsDirectory();
     final file = File('${dir.path}/Report.pdf');
     await file.writeAsBytes(await pdf.save());
