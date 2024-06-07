@@ -12,10 +12,26 @@ import 'package:medicine_tracker/personal_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_background/flutter_background.dart';
+
+
 
 void main() async {
+  
   await initializeDateFormatting('ar'); // Initialize Arabic locale data
   WidgetsFlutterBinding.ensureInitialized();
+  const androidConfig = FlutterBackgroundAndroidConfig(
+    notificationTitle: "Background Service",
+    notificationText: "Your app is running in the background",
+    notificationImportance: AndroidNotificationImportance.Default,
+    notificationIcon: AndroidResource(name: 'background_icon', defType: 'drawable'),
+  );
+
+  bool success = await FlutterBackground.initialize(androidConfig: androidConfig);
+  if (success) {
+    await FlutterBackground.enableBackgroundExecution();
+  }
+  
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await Alarm.init();
   runApp(const MedicineTableApp());

@@ -9,9 +9,6 @@ class ExampleAlarmRingScreen extends StatelessWidget {
   final AlarmSettings alarmSettings;
 
   void stopAlarm(AlarmSettings alarmSettings) {
-    // Alarm.stop(widget.alarmSettings!.id).then((res) {
-    //   if (res) Navigator.pop(context, {'alarmId': null, 'success': true});
-    // });
     DateTime newdDateTime = alarmSettings.dateTime.add(const Duration(days: 1));
     final newalarmSettings = AlarmSettings(
       id: alarmSettings.id,
@@ -27,8 +24,6 @@ class ExampleAlarmRingScreen extends StatelessWidget {
     Alarm.stop(alarmSettings.id).then((bool result) {
       return Alarm.set(alarmSettings: newalarmSettings);
     });
-
-    // Alarm.set(alarmSettings: newalarmSettings);
   }
 
   @override

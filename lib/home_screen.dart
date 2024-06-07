@@ -1,4 +1,4 @@
-import 'dart:io';
+// import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:medicine_tracker/classes_handler.dart';
@@ -86,7 +86,7 @@ class _MedicineTableState extends State<MedicineTable> {
           scrollDirection: Axis.horizontal,
           child: DataTable(
               dataRowMaxHeight: 0,
-              columnSpacing: 9,
+              columnSpacing: 0,
               headingRowHeight: 70,
               columns: _buildColumns(context),
               rows: const []),
@@ -96,7 +96,7 @@ class _MedicineTableState extends State<MedicineTable> {
             scrollDirection: Axis.vertical,
             child: DataTable(
               dataRowMaxHeight: 100,
-              columnSpacing: 9,
+              columnSpacing: 0,
               headingRowHeight: 0,
               columns: _buildColumns(context),
               rows: List.generate(widget.medicines.length, (i) {
