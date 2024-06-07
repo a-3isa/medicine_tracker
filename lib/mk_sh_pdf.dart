@@ -19,7 +19,7 @@ import 'medicine.dart';
 
 class PDFCreator {
   static Future<pw.Font> loadFont() async {
-    final fontData = await rootBundle.load('assets/Cairo-Regular.ttf');
+    final fontData = await rootBundle.load('assets/arial.ttf');
     return pw.Font.ttf(fontData);
   }
 
@@ -38,12 +38,12 @@ class PDFCreator {
 
     pw.TextStyle headerStyle = pw.TextStyle(
       font: headerFont,
-      fontSize: 10,
+      fontSize: 18,
       fontWeight: pw.FontWeight.bold,
     );
     pw.TextStyle personalStyle = pw.TextStyle(
       font: headerFont,
-      fontSize: 8,
+      fontSize: 12,
       fontWeight: pw.FontWeight.bold,
     );
     pw.TextStyle normalStyle = pw.TextStyle(
@@ -87,10 +87,24 @@ class PDFCreator {
             '${Languages.of(context)!.personalCase}: ${personals[0].personCase}',
             style: personalStyle),
       ]),
+      pw.SizedBox(
+        child: pw.Padding(
+          padding: const pw.EdgeInsets.all(5),
+          child:
+              pw.Container(), // Add a child widget inside the Padding if needed
+        ),
+      ),
       pw.Container(
         height: 2,
         width: double.infinity,
         color: PdfColors.black,
+      ),
+      pw.SizedBox(
+        child: pw.Padding(
+          padding: const pw.EdgeInsets.all(5),
+          child:
+              pw.Container(), // Add a child widget inside the Padding if needed
+        ),
       ),
     ];
     // pdf.addPage(
@@ -138,6 +152,13 @@ class PDFCreator {
                   'Day: $day - Date: ${DateFormat('MM-dd').format(date)}',
                   style: normalStyle,
                   textAlign: pw.TextAlign.center)),
+          pw.SizedBox(
+            child: pw.Padding(
+              padding: const pw.EdgeInsets.all(2),
+              child: pw
+                  .Container(), // Add a child widget inside the Padding if needed
+            ),
+          ),
           pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
@@ -340,7 +361,7 @@ class PDFCreator {
     }).toList();
     pdf.addPage(
       pw.MultiPage(
-        margin: const pw.EdgeInsets.all(5),
+        margin: const pw.EdgeInsets.all(10),
         textDirection: Languages.of(context)!.direction,
         build: (pw.Context context) => content,
       ),

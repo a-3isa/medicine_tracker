@@ -49,12 +49,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/1.png
-    - assets/1.jpg
-    - assets/NotoSans-Regular.ttf
-    - assets/Cairo-Regular.ttf
-    - assets/NotoSansArabic-Regular.ttf
-    - assets/mozart.mp3
-    - assets/nokia.mp3
-    - assets/one_piece.mp3
-    - assets/star_wars.mp3
+    - assets/arial.ttf
     - assets/marimba.mp3
