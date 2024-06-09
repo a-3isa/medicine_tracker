@@ -242,8 +242,8 @@ class PDFCreator {
               itemBuilder: (context, index) {
                 final medicine = index < medicinesForDayAndDate.length
                     ? medicinesForDayAndDate[index]
-                    : medicinesForDayAndDate[0];
-                final timeIndex = medicine.dates
+                    : null;
+                final timeIndex = medicine?.dates
                     .indexWhere((dateMap) => dateMap.containsKey(date));
 
                 final biometric = index < biometricsForDate.length
@@ -269,15 +269,15 @@ class PDFCreator {
                               padding: const pw.EdgeInsets.all(2.0),
                               child: pw.Center(
                                 child:
-                                    pw.Text(medicine.name, style: normalStyle),
+                                    pw.Text(medicine?.name ?? "", style: normalStyle),
                               ),
                             ),
                             pw.Padding(
                               padding: const pw.EdgeInsets.all(2.0),
                               child: pw.Center(
                                 child: pw.Text(
-                                    medicine.checkboxStates[timeIndex][medicine
-                                            .checkboxStates[timeIndex]
+                                    medicine?.checkboxStates[timeIndex!][medicine
+                                            .checkboxStates[timeIndex!]
                                             .keys
                                             .first] ??
                                         "",

@@ -785,10 +785,10 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                   age: age,
                   personCase: personCase,
                 );
-                personals[0] = personal;
+                personals = [personal];
 
                 // personals.add(personal);
-                await savePersonal(personals);
+                await savePersonal(personals!);
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
