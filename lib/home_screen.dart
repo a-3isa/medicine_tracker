@@ -173,7 +173,7 @@ class _MedicineTableState extends State<MedicineTable> {
                                   alignment: Alignment.center,
                                   child: Padding(
                                     padding: const EdgeInsets.only(
-                                        left: 10, right: 10, top: 10),
+                                        left: 8, right: 8, top: 8),
                                     child: Column(
                                       children: [
                                         Text(medicine.period,
@@ -182,18 +182,21 @@ class _MedicineTableState extends State<MedicineTable> {
                                                 fontSize: 12.0)),
                                         Padding(
                                           padding: const EdgeInsets.only(
-                                              top: 8.0, bottom: 8),
+                                              top: 8.0, bottom: 4),
                                           child: Container(
                                             height: 2,
                                             width: double.infinity,
                                             color: Colors.black,
                                           ),
                                         ),
-                                        Text(
-                                            DateFormat('hh:mm a')
-                                                .format(medicine.time),
-                                            style:
-                                                const TextStyle(fontSize: 12.0))
+                                        Padding(
+                                          padding: const EdgeInsets.only(top:8.0),
+                                          child: Text(
+                                              DateFormat('hh:mm a')
+                                                  .format(medicine.time),
+                                              style:
+                                                  const TextStyle(fontSize: 12.0)),
+                                        )
                                       ],
                                     ),
                                   ),

@@ -18,22 +18,24 @@ class Medicine {
     required this.time,
     List<Map<bool, String>>? checkboxStates,
     List<Map<DateTime, String>>? dates,
-  }) : dates = dates ?? [],
+  })  : dates = dates ?? [],
         checkboxStates = checkboxStates ?? [];
 
   Map<String, dynamic> toJson() {
     return {
       'name': name,
-      'alarmId':alarmId,
+      'alarmId': alarmId,
       'image': image != null ? base64Encode(image!) : null,
       'checkboxStates': checkboxStates
           .map(
               (map) => map.map((key, value) => MapEntry(key.toString(), value)))
           .toList(),
       'dates': dates
-          .map((date) => date.map((key, value) => MapEntry(key.toIso8601String(), value)))
+          .map((date) =>
+              date.map((key, value) => MapEntry(key.toIso8601String(), value)))
           .toList(),
-      'period': period,'time':time.toIso8601String(),
+      'period': period,
+      'time': time.toIso8601String(),
     };
   }
 
@@ -47,15 +49,16 @@ class Medicine {
       name: json['name'],
       image: json['image'] != null ? base64Decode(json['image']) : null,
       period: json['period'],
-      alarmId:json['alarmId'],
+      alarmId: json['alarmId'],
       time: DateTime.parse(json['time']),
       checkboxStates: (json['checkboxStates'] as List)
           .map((item) => (item as Map<String, dynamic>)
               .map((key, value) => MapEntry(key == 'true', value as String)))
           .toList(),
-      dates: (json['dates'] as List).map((dateMap) =>
-          (dateMap as Map<String, dynamic>).map((key, value) =>
-              MapEntry(DateTime.parse(key), value as String))).toList(),
+      dates: (json['dates'] as List)
+          .map((dateMap) => (dateMap as Map<String, dynamic>).map(
+              (key, value) => MapEntry(DateTime.parse(key), value as String)))
+          .toList(),
     );
   }
 }
@@ -133,5 +136,34 @@ class Personal {
   @override
   String toString() {
     return 'Personal{name: $name, age: $age, case: $personCase}';
+  }
+}
+
+class Bipap {
+  DateTime measurementDate;
+  double? bipap;
+
+  Bipap({
+    this.bipap,
+    required this.measurementDate,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'bipap': bipap,
+      'measurementDate': measurementDate.toIso8601String(),
+    };
+  }
+
+  factory Bipap.fromJson(Map<String, dynamic> json) {
+    return Bipap(
+      bipap: json['bipap'],
+      measurementDate: DateTime.parse(json['measurementDate']),
+    );
+  }
+
+  @override
+  String toString() {
+    return 'Bipap{bipap: $bipap, measurementDate: $measurementDate}';
   }
 }

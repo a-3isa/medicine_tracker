@@ -49,7 +49,8 @@ class _SplashScreenState extends State<SplashScreen> {
                     curve: Curves.easeInCubic,
                     child:const CircleAvatar(
                       backgroundColor: Colors.transparent,
-                      radius: 100,
+                      radius: 80
+                      ,
                       foregroundImage: AssetImage('assets/1.png'),
                     ),
                   ),

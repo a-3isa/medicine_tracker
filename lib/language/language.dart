@@ -29,6 +29,8 @@ abstract class Languages {
   String get noImageSelected;
   String get delete;
   String get save;
+  String get last10Days;
+  String get allData;
   String get confirmDelete;
   String get deleteMessage;
   String get proceedToApp;
@@ -37,6 +39,7 @@ abstract class Languages {
   String get diastolicBloodPressure;
   String get sugarLevel;
   String get systolicBloodPressure;
+  String get bipap;
   String get heartRate;
   String get enterBiometrics;
   String get name;
@@ -48,6 +51,7 @@ abstract class Languages {
   String get addTime;
   String get editTime;
   String get editProfile;
+  String get enterBipap;
   String get stop;
   pw.TextDirection get direction;
 }

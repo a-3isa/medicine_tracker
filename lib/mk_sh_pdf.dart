@@ -1,36 +1,42 @@
 import 'dart:io';
 import 'dart:math';
-// import 'package:intl/intl.dart';
-// import 'package:flutter/material.dart';
-// import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
-// import 'package:printing/printing.dart';
-
 import 'package:flutter/material.dart';
 import 'package:medicine_tracker/language/language.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
-
-// import 'package:arabic_font/arabic_font.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'medicine.dart';
 
 class PDFCreator {
-  static Future<pw.Font> loadFont() async {
+  Future<pw.Font> loadFont() async {
     final fontData = await rootBundle.load('assets/arial.ttf');
     return pw.Font.ttf(fontData);
   }
 
-  static Future<XFile> createPDF(
+  List getLastTenItems(List items) {
+    if (items.length <= 10) {
+      return items;
+    }
+    return items.sublist(items.length - 10, items.length);
+  }
+
+  Future<XFile> createPDF(
       BuildContext context,
       Future<List<Medicine>> medicinesFuture,
       Future<List<Biometrics>> biometricsFuture,
-      Future<List<Personal>> personalsFuture) async {
+      Future<List<Bipap>> bipapFuture,
+      Future<List<Personal>> personalsFuture,
+      bool last10days) async {
     final pdf = pw.Document();
     final medicines = await medicinesFuture;
+    final last10Days = last10days;
+    // medicines = getLastTenItems(medicines);
     final biometrics = await biometricsFuture;
+    final bipaps = await bipapFuture;
+
     final personals = await personalsFuture;
 
     final headerFont = await loadFont();
@@ -50,17 +56,6 @@ class PDFCreator {
       font: normalFont,
       fontSize: 8,
     );
-
-    // void addContentToPage(pw.Document pdf, List<pw.Widget> content) {
-    //   pdf.addPage(
-    //     pw.Page(
-    //       textDirection: Languages.of(context)!.direction,
-    //       build: (pw.Context context) {
-    //         return pw.Column(children: content);
-    //       },
-    //     ),
-    //   );
-    // }
 
     List<pw.Widget> content = [
       pw.Center(
@@ -116,9 +111,15 @@ class PDFCreator {
 
     final dayDateGroups = <DateTime, Map<String, List<Medicine>>>{};
     final dateGroups = <String, List<Biometrics>>{};
+    final bipapGroups = <DateTime, List<Bipap>>{};
 
     for (var medicine in medicines) {
-      for (var dateMap in medicine.dates) {
+      List days = medicine.dates;
+      if (last10Days) {
+        days = getLastTenItems(medicine.dates);
+      }
+      // List last10days = getLastTenItems(medicine.dates);
+      for (var dateMap in days) {
         dateMap.forEach((date, day) {
           // String formattedDate = DateFormat('MM-dd').format(date);
           if (!dayDateGroups.containsKey(date)) {
@@ -139,13 +140,47 @@ class PDFCreator {
       }
       dateGroups[date]!.add(biometric);
     }
+
+    for (var bipap in bipaps) {
+      final date = bipap.measurementDate;
+      if (!bipapGroups.containsKey(date)) {
+        bipapGroups[date] = [];
+      }
+      bipapGroups[date]!.add(bipap);
+    }
+
     dayDateGroups.keys.expand((date) {
       return dayDateGroups[date]!.keys.map((day) {
         final medicinesForDayAndDate = dayDateGroups[date]![day]!;
         final biometricsForDate =
             dateGroups[DateFormat('MM-dd').format(date)] ?? [];
-        // final maxLength =
-        //     max(medicinesForDayAndDate.length, biometricsForDate.length);
+        // final prevDay = date.subtract(Duration(days: 1));
+        // print(date);
+        final bipapForDate =
+            bipapGroups[date] ?? [];
+        List<DateTime> keys = bipapGroups.keys.toList();
+        int currentIndex = keys.indexOf(date);
+        // print(keys);
+        // print(currentIndex);
+        // print("&&&&&&&&&&&&&&&&&&&&&&");
+        // print(bipapForDate);
+        // print(bipapGroups);
+        if (currentIndex > 0) {
+          int previousIndex = currentIndex - 1;
+          DateTime previousKey = keys[previousIndex];
+          final previousBipapForDate = bipapGroups[previousKey];
+          int differenceInDays = bipapForDate[0]
+              .measurementDate
+              .difference(previousBipapForDate![0].measurementDate)
+              .inDays;
+
+          // Do something with previousBipapForDate
+          // print((previousBipapForDate.first.bipap!-bipapForDate[0].bipap!)/differenceInDays);
+          // print(differenceInDays);
+          bipapForDate[0].bipap = (bipapForDate[0].bipap!-previousBipapForDate.first.bipap!)/differenceInDays;
+          print("ooooooooooooooooooooooooooooo");
+          print(bipapForDate[0].bipap);
+        } 
         List<pw.Widget> dayDateContent = [
           pw.Center(
               child: pw.Text(
@@ -166,6 +201,22 @@ class PDFCreator {
               pw.Expanded(
                 child: pw.Column(
                   children: [
+                    pw.Table(border: pw.TableBorder.all(), columnWidths: {
+                      0: const pw.FixedColumnWidth(200),
+                      1: const pw.FixedColumnWidth(200),
+                    }, children: [
+                      pw.TableRow(
+                        children: [
+                          pw.Center(
+                            child: pw.Text('Home Bipap', style: normalStyle),
+                          ),
+                          pw.Center(
+                            child: pw.Text('${bipapForDate.isNotEmpty? bipapForDate[0].bipap : 0}',
+                                style: normalStyle),
+                          ),
+                        ],
+                      ),
+                    ]),
                     pw.Table(
                       columnWidths: {
                         0: const pw.FixedColumnWidth(200),
@@ -175,57 +226,40 @@ class PDFCreator {
                         4: const pw.FixedColumnWidth(200),
                         5: const pw.FixedColumnWidth(200),
                         6: const pw.FixedColumnWidth(200),
+                        7: const pw.FixedColumnWidth(200),
                       },
                       border: pw.TableBorder.all(),
                       children: [
                         pw.TableRow(
                           children: [
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Center(
-                                child: pw.Text('Medicine Name',
-                                    style: normalStyle),
-                              ),
+                            pw.Center(
+                              child:
+                                  pw.Text('Medicine Name', style: normalStyle),
                             ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Center(
-                                child: pw.Text('Time', style: normalStyle),
-                              ),
+                            pw.Center(
+                              child: pw.Text('Time', style: normalStyle),
                             ),
                             // if (biometricsForDate.isNotEmpty) ...[
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(1.0),
-                              child: pw.Center(
-                                child:
-                                    pw.Text('Heart Rate', style: normalStyle),
-                              ),
+                            pw.Center(
+                              child: pw.Text('Heart Rate', style: normalStyle),
                             ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(1.0),
-                              child: pw.Center(
-                                child: pw.Text('Blood Pressure',
-                                    style: normalStyle),
-                              ),
+
+                            pw.Center(
+                              child:
+                                  pw.Text('Blood Pressure', style: normalStyle),
                             ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(1.0),
-                              child: pw.Center(
-                                child: pw.Text('Oxygen', style: normalStyle),
-                              ),
+
+                            pw.Center(
+                              child: pw.Text('Oxygen', style: normalStyle),
                             ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(1.0),
-                              child: pw.Center(
-                                child: pw.Text('Sugar', style: normalStyle),
-                              ),
+
+                            pw.Center(
+                              child: pw.Text('Sugar', style: normalStyle),
                             ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(1.0),
-                              child: pw.Center(
-                                child: pw.Text('Time', style: normalStyle),
-                              ),
-                            )
+
+                            pw.Center(
+                              child: pw.Text('Time', style: normalStyle),
+                            ),
                           ],
                           // ],
                         ),
@@ -249,6 +283,10 @@ class PDFCreator {
                 final biometric = index < biometricsForDate.length
                     ? biometricsForDate[index]
                     : null;
+                // double? bipap_value = index != biometricsForDate.length - 1
+                //     ? (biometricsForDate[index].bipap ?? 0) -
+                //         (biometricsForDate[index + 1].bipap ?? 0)
+                //     : 0;
 
                 return pw.Column(children: [
                   pw.Table(
@@ -260,74 +298,60 @@ class PDFCreator {
                         4: const pw.FixedColumnWidth(200),
                         5: const pw.FixedColumnWidth(200),
                         6: const pw.FixedColumnWidth(200),
+                        7: const pw.FixedColumnWidth(200),
                       },
                       border: pw.TableBorder.all(),
                       children: [
                         pw.TableRow(
                           children: [
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Center(
-                                child:
-                                    pw.Text(medicine?.name ?? "", style: normalStyle),
-                              ),
+                            pw.Center(
+                              child: pw.Text(medicine?.name ?? "",
+                                  style: normalStyle),
                             ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Center(
-                                child: pw.Text(
-                                    medicine?.checkboxStates[timeIndex!][medicine
-                                            .checkboxStates[timeIndex!]
-                                            .keys
-                                            .first] ??
-                                        "",
-                                    style: normalStyle),
-                              ),
+                            pw.Center(
+                              child: pw.Text(
+                                  medicine?.checkboxStates[timeIndex!][medicine
+                                          .checkboxStates[timeIndex!]
+                                          .keys
+                                          .first] ??
+                                      "",
+                                  style: normalStyle),
                             ),
+
                             // if (biometricsForDate.isNotEmpty &&
                             //     biometric != null) ...[
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Center(
-                                child: pw.Text(
-                                    biometric?.heartRate?.toString() ?? '',
-                                    style: normalStyle),
-                              ),
+                            pw.Center(
+                              child: pw.Text(
+                                  biometric?.heartRate?.toString() ?? '',
+                                  style: normalStyle),
                             ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Center(
-                                child: pw.Text(
-                                    biometric?.bloodPressure != null
-                                        ? '${biometric?.bloodPressure![0]}/${biometric?.bloodPressure![1]}'
-                                        : '',
-                                    style: normalStyle),
-                              ),
+
+                            pw.Center(
+                              child: pw.Text(
+                                  biometric?.bloodPressure != null
+                                      ? '${biometric?.bloodPressure![0]}/${biometric?.bloodPressure![1]}'
+                                      : '',
+                                  style: normalStyle),
                             ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Center(
-                                child: pw.Text(
-                                    biometric?.oxygen?.toString() ?? '',
-                                    style: normalStyle),
-                              ),
+
+                            pw.Center(
+                              child: pw.Text(
+                                  biometric?.oxygen?.toString() ?? '',
+                                  style: normalStyle),
                             ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Center(
-                                child: pw.Text(
-                                    biometric?.sugar?.toString() ?? '',
-                                    style: normalStyle),
-                              ),
+
+                            pw.Center(
+                              child: pw.Text(biometric?.sugar?.toString() ?? '',
+                                  style: normalStyle),
                             ),
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.all(2.0),
-                              child: pw.Center(
-                                child: pw.Text(
-                                    biometric?.time?.toString() ?? '',
-                                    style: normalStyle),
-                              ),
-                            )
+                            // pw.Center(
+                            //   child: pw.Text(bipap_value.toString(),
+                            //       style: normalStyle),
+                            // ),
+                            pw.Center(
+                              child: pw.Text(biometric?.time?.toString() ?? '',
+                                  style: normalStyle),
+                            ),
                           ],
                           // ],
                         )

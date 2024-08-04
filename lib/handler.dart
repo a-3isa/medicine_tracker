@@ -25,6 +25,7 @@ class MedicineTablePage extends StatefulWidget {
 class _MedicineTablePageState extends State<MedicineTablePage> {
   List<Medicine>? medicines;
   List<Biometrics>? biometricss;
+  List<Bipap>? bipaps;
   bool loading = false;
 
   static StreamSubscription<AlarmSettings>? subscription;
@@ -43,12 +44,17 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
     vibrate = true;
     volume = null;
     assetAudio = 'assets/marimba.mp3';
-
     medicines = [];
     biometricss = [];
+    bipaps = [];
     loadMedicines().then((loadedMedicines) {
       setState(() {
         medicines = loadedMedicines;
+      });
+    });
+    loadBipap().then((loadedBipaps) {
+      setState(() {
+        bipaps = loadedBipaps;
       });
     });
     loadBiometrics().then((loadedBiometrics) {
@@ -86,6 +92,7 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
 
   @override
   Widget build(BuildContext context) {
+    // PDFCreator pdfCreator = PDFCreator();
     return Scaffold(
         appBar: AppBar(
           centerTitle: true,
@@ -108,10 +115,7 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                 leading: const Icon(Icons.share),
                 title: Text(Languages.of(context)!.sharePDF),
                 onTap: () async {
-                  final pdfFile = await PDFCreator.createPDF(context,
-                      loadMedicines(), loadBiometrics(), loadPersonal());
-                  sharePdf(pdfFile);
-                  Navigator.of(context).pop();
+                  _showSharePopup(context);
                 },
               ),
               ListTile(
@@ -122,10 +126,17 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.add_box_rounded),
+                leading: const Icon(Icons.medication_liquid),
                 title: Text(Languages.of(context)!.addMedicine),
                 onTap: () {
                   _showAddMedicineDialog(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.add_box_outlined),
+                title: Text(Languages.of(context)!.bipap),
+                onTap: () {
+                  _showBipapDialog(context);
                 },
               ),
               ListTile(
@@ -297,7 +308,7 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
     selectedDateTime = selectedDateTime.copyWith(second: 0, millisecond: 0);
 
     File? selectedImage;
-    Uint8List? imageBytes ;
+    Uint8List? imageBytes;
     String period =
         Languages.of(context)!.timeOptions[0]; // Default selected time
     late DateTime time;
@@ -306,7 +317,8 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            title: Text(Languages.of(context)!.addMedicine ,style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(Languages.of(context)!.addMedicine,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -400,8 +412,8 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                     // print(time);
 
                     textEditingController.clear();
-                    onMedicineAdded(medicineName, imageBytes, period,
-                        alarmId, time);
+                    onMedicineAdded(
+                        medicineName, imageBytes, period, alarmId, time);
                     Navigator.of(context).pop();
                   }
                 },
@@ -622,6 +634,18 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                       heartRate = int.tryParse(value);
                     },
                   ),
+                  TextFormField(
+                    decoration: InputDecoration(
+                      labelText: Languages.of(context)!.oxygenLevel,
+                      // prefixIcon: Icon(Icons.),
+                      border: const OutlineInputBorder(),
+                    ),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    onChanged: (value) {
+                      oxygen = double.tryParse(value);
+                    },
+                  ),
                   const SizedBox(height: 10),
                   const Divider(),
                   const SizedBox(height: 10),
@@ -651,18 +675,6 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                   const SizedBox(height: 10),
                   const Divider(),
                   const SizedBox(height: 10),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      labelText: Languages.of(context)!.oxygenLevel,
-                      // prefixIcon: Icon(Icons.),
-                      border: const OutlineInputBorder(),
-                    ),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    onChanged: (value) {
-                      oxygen = double.tryParse(value);
-                    },
-                  ),
                   const SizedBox(height: 10),
                   TextFormField(
                     decoration: InputDecoration(
@@ -676,6 +688,9 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                       sugar = double.tryParse(value);
                     },
                   ),
+                  const SizedBox(height: 10),
+                  const Divider(),
+                  const SizedBox(height: 10),
                 ],
               ),
             ),
@@ -710,6 +725,56 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
         );
       },
     );
+  }
+
+  Future<void> _showSharePopup(BuildContext context) async {
+    PDFCreator pdfCreator = PDFCreator();
+
+    await showDialog<String>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(
+              Languages.of(context)!.sharePDF,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(Languages.of(context)!.cancel),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final pdfFile = await pdfCreator.createPDF(
+                      context,
+                      loadMedicines(),
+                      loadBiometrics(),
+                      loadBipap(),
+                      loadPersonal(),
+                      true);
+                  sharePdf(pdfFile);
+                  Navigator.of(context).pop();
+              },
+              child: Text(Languages.of(context)!.last10Days),
+            ),ElevatedButton(
+              onPressed: () async {
+                final pdfFile = await pdfCreator.createPDF(
+                      context,
+                      loadMedicines(),
+                      loadBiometrics(),
+                      loadBipap(),
+                      loadPersonal(),
+                      false);
+                  sharePdf(pdfFile);
+                  Navigator.of(context).pop();
+              },
+              child: Text(Languages.of(context)!.allData),
+            ),
+          ],
+          );
+        });
   }
 
   Future<void> _showEditPersonalDialog(BuildContext context) async {
@@ -789,6 +854,76 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
 
                 // personals.add(personal);
                 await savePersonal(personals!);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MedicineTablePage(),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                textStyle: const TextStyle(fontSize: 18.0),
+              ),
+              child: Text(Languages.of(context)!.save),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showBipapDialog(BuildContext context) async {
+    DateTime now = DateTime.now();
+    DateTime measurementDate = DateTime(now.year, now.month, now.day);
+
+    double? bipap;
+
+    await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            Languages.of(context)!.enterBipap,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),keyboardType: TextInputType.number,
+                    onChanged: (value) {
+                      bipap = double.tryParse(value);
+                    },
+                  ),
+                  const SizedBox(height: 32.0),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(Languages.of(context)!.cancel),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                // print(bipap);
+                // print(measurementDate);
+                Bipap bipapVal =
+                    Bipap(bipap: bipap, measurementDate: measurementDate);
+                // Bipaps = [bipapVal];
+
+                bipaps!.add(bipapVal);
+                await saveBipap(bipaps!);
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(

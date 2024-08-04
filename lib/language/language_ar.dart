@@ -113,5 +113,17 @@ class LanguageAr extends Languages {
   
   @override
   String get editProfile => "تعديل البيانات الشخصية";
+  
+  @override
+  String get bipap => 'جهاز التنفس الصناعي المنزلي';
+
+  @override
+  String get enterBipap => "أدخل عدد ساعات جهاز التنفس";
+  
+  @override
+  String get allData => "كل التسجيلات";
+  
+  @override
+  String get last10Days => "آخر عشرة أيام";
 
 }

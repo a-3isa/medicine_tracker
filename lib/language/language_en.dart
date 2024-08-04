@@ -112,4 +112,16 @@ class LanguageEn extends Languages {
   
   @override
   String get editProfile => "ُEdit Profile";
+  
+  @override
+  String get bipap => "Home Bipap";
+  
+  @override
+  String get enterBipap => "Enter Home Bipap Hours";
+  
+  @override
+  String get allData => "All Data";
+  
+  @override
+  String get last10Days => "Last 10 Days";
 }
