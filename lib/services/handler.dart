@@ -1,21 +1,10 @@
-import 'dart:io';
-import 'dart:typed_data';
-
-import 'package:alarm/alarm.dart';
-import 'package:alarm/model/alarm_settings.dart';
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
-import 'package:medicine_tracker/classes_handler.dart';
-// import 'package:medicine_tracker/edit_alarm.dart';
-import 'package:medicine_tracker/home_screen.dart';
-import 'package:medicine_tracker/language/language.dart';
-import 'package:medicine_tracker/medicine.dart';
-import 'package:medicine_tracker/mk_sh_pdf.dart';
-import 'package:medicine_tracker/ring.dart';
-import 'dart:async';
-
+/// Handler for medicine table page and related functionalities.
+///
+/// This widget manages the main screen of the medicine tracker app,
+/// including displaying medicines, adding/editing/deleting medicines,
+/// handling alarms, and providing access to other features like biometrics and PDF sharing.
 class MedicineTablePage extends StatefulWidget {
+  /// Creates a new MedicineTablePage instance.
   const MedicineTablePage({super.key});
 
   @override
@@ -23,18 +12,40 @@ class MedicineTablePage extends StatefulWidget {
 }
 
 class _MedicineTablePageState extends State<MedicineTablePage> {
+  /// List of medicines loaded from storage.
   List<Medicine>? medicines;
+
+  /// List of biometrics data loaded from storage.
   List<Biometrics>? biometricss;
+
+  /// List of bipap data loaded from storage.
   List<Bipap>? bipaps;
+
+  /// Indicates if data is currently loading.
   bool loading = false;
 
+  /// Subscription for alarm ring stream.
   static StreamSubscription<AlarmSettings>? subscription;
+
+  /// List of active alarms.
   late List<AlarmSettings> alarms;
+
+  /// Selected date and time for alarms.
   late DateTime selectedDateTime;
+
+  /// Whether to loop audio for alarms.
   late bool loopAudio;
+
+  /// Whether to vibrate for alarms.
   late bool vibrate;
+
+  /// Volume level for alarms.
   late double? volume;
+
+  /// Asset path for alarm audio.
   late String assetAudio;
+
+  /// Body text for alarm notifications.
   late String notificationBody;
   @override
   void initState() {
@@ -92,71 +103,77 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
 
   @override
   Widget build(BuildContext context) {
-    // PDFCreator pdfCreator = PDFCreator();
-    return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: const Text('Medicine Tracker'),
-        ),
-        drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              DrawerHeader(
-                decoration: const BoxDecoration(
-                  color: Colors.blue,
-                ),
-                child: Text(
-                  Languages.of(context)!.menu,
-                  style: const TextStyle(color: Colors.white, fontSize: 25),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.share),
-                title: Text(Languages.of(context)!.sharePDF),
-                onTap: () async {
-                  _showSharePopup(context);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.monitor_heart_outlined),
-                title: Text(Languages.of(context)!.inputBiometrics),
-                onTap: () {
-                  _showBiometricsInputPopup(context);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.medication_liquid),
-                title: Text(Languages.of(context)!.addMedicine),
-                onTap: () {
-                  _showAddMedicineDialog(context);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.add_box_outlined),
-                title: Text(Languages.of(context)!.bipap),
-                onTap: () {
-                  _showBipapDialog(context);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.account_circle_rounded),
-                title: Text(Languages.of(context)!.editProfile),
-                onTap: () {
-                  _showEditPersonalDialog(context);
-                },
-              ),
-            ],
+    return Consumer<MedicineProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+        return Scaffold(
+          appBar: AppBar(
+            centerTitle: true,
+            title: const Text('Medicine Tracker'),
           ),
-        ),
-        body: medicines != null
-            ? MedicineTable(
-                medicines: medicines!,
-                // onCheckboxChanged: onCheckboxChanged,
-                onDeletePressed: _deleteMedicine,
-                onEditPressed: _showEditMedicineDialog,
-              )
-            : const Text(""));
+          drawer: Drawer(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: <Widget>[
+                DrawerHeader(
+                  decoration: const BoxDecoration(
+                    color: Colors.blue,
+                  ),
+                  child: Text(
+                    Languages.of(context)!.menu,
+                    style: const TextStyle(color: Colors.white, fontSize: 25),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.share),
+                  title: Text(Languages.of(context)!.sharePDF),
+                  onTap: () async {
+                    _showSharePopup(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.monitor_heart_outlined),
+                  title: Text(Languages.of(context)!.inputBiometrics),
+                  onTap: () {
+                    _showBiometricsInputPopup(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.medication_liquid),
+                  title: Text(Languages.of(context)!.addMedicine),
+                  onTap: () {
+                    _showAddMedicineDialog(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.add_box_outlined),
+                  title: Text(Languages.of(context)!.bipap),
+                  onTap: () {
+                    _showBipapDialog(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.account_circle_rounded),
+                  title: Text(Languages.of(context)!.editProfile),
+                  onTap: () {
+                    _showEditPersonalDialog(context);
+                  },
+                ),
+              ],
+            ),
+          ),
+          body: provider.medicines.isNotEmpty
+              ? MedicineTable(
+                  medicines: provider.medicines,
+                  onDeletePressed: (index) => provider.deleteMedicine(provider.medicines[index]),
+                  onEditPressed: _showEditMedicineDialog,
+                )
+              : const Center(child: Text("No medicines added yet")),
+        );
+      },
+    );
   }
 
   (AlarmSettings, int, DateTime) buildAlarmSettings(String medicineName) {
@@ -186,96 +203,53 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
 
   void onMedicineAdded(String medicineName, Uint8List? image, String period,
       int? alarmId, DateTime time) {
-    setState(() {
-      List<Map<bool, String>> initialCheckboxStates =
-          List.filled(1, {false: ""});
-      // List<String> initialhours = List.filled(7, "");
-      DateTime creationDay = DateTime.now();
-      creationDay =
-          DateTime(creationDay.year, creationDay.month, creationDay.day);
-      // List<String> days = [];
-      List<Map<DateTime, String>> dates = [];
+    List<Map<bool, String>> initialCheckboxStates =
+        List.filled(1, {false: ""});
+    DateTime creationDay = DateTime.now();
+    creationDay =
+        DateTime(creationDay.year, creationDay.month, creationDay.day);
+    List<Map<DateTime, String>> dates = [];
+    String dayName = DateFormat('EEEE').format(creationDay);
+    dates.add({creationDay: dayName});
 
-      // for (int i = 0; i < 7; i++) {
-      // DateTime date = creationDay.add(Duration(days: 0));
-      String dayName = DateFormat(
-        'EEEE',
-      ).format(creationDay);
-      // days.add(dayName);
-      dates.add({creationDay: dayName});
-      // }
-
-      final medicine = Medicine(
-        time: time,
-        name: medicineName,
-        image: image,
-        period: period,
-        // creationDay: creationDay,
-        alarmId: alarmId,
-        // days: days,
-        dates: dates, checkboxStates: initialCheckboxStates,
-        // checkboxStates: initialCheckboxStates,
-        // hours: initialhours,
-      );
-      if (medicines != null) {
-        medicines!.add(medicine);
-        medicines!.sort((a, b) {
-          if (a.time.hour == b.time.hour) {
-            return a.time.minute.compareTo(b.time.minute);
-          }
-          return a.time.hour.compareTo(b.time.hour);
-        });
-        saveMedicines(medicines!);
-      }
-    });
-  }
-
-  void onDeletePressed(Medicine medicine) {
-    setState(() {
-      if (medicine.alarmId != null) Alarm.stop(medicine.alarmId!);
-
-      medicines!.remove(medicine);
-      saveMedicines(medicines!);
-      // Navigator.of(context).pop();
-      // Navigator.of(context).pop();
-    });
+    final medicine = Medicine(
+      time: time,
+      name: medicineName,
+      image: image,
+      period: period,
+      alarmId: alarmId,
+      dates: dates,
+      checkboxStates: initialCheckboxStates,
+    );
+    Provider.of<MedicineProvider>(context, listen: false).addMedicine(medicine);
   }
 
   void onEditMedicine(Medicine medicine, String updatedMedicineName,
       String selectedPeriod, Uint8List? imageBytes, DateTime selectedTime) {
-    setState(() {
-      medicine.name = updatedMedicineName;
-      medicine.period = selectedPeriod;
-      if (medicine.time != selectedTime) {
-        medicine.time = selectedTime;
-        Alarm.stop(medicine.alarmId!).then((bool result) {
-          final editedAlarmSettings = AlarmSettings(
-            id: medicine.alarmId!,
-            dateTime: selectedDateTime,
-            loopAudio: loopAudio,
-            vibrate: vibrate,
-            volume: volume,
-            assetAudioPath: assetAudio,
-            notificationTitle: 'Medicine Time',
-            notificationBody: 'It is time to take your ${medicine.name}.',
-            enableNotificationOnKill: Platform.isIOS,
-          );
-          return Alarm.set(alarmSettings: editedAlarmSettings);
-        });
-      }
-
-      if (imageBytes != null) {
-        medicine.image = imageBytes;
-      }
-      medicines!.sort((a, b) {
-        if (a.time.hour == b.time.hour) {
-          return a.time.minute.compareTo(b.time.minute);
-        }
-        return a.time.hour.compareTo(b.time.hour);
+    medicine.name = updatedMedicineName;
+    medicine.period = selectedPeriod;
+    if (medicine.time != selectedTime) {
+      medicine.time = selectedTime;
+      Alarm.stop(medicine.alarmId!).then((bool result) {
+        final editedAlarmSettings = AlarmSettings(
+          id: medicine.alarmId!,
+          dateTime: selectedDateTime,
+          loopAudio: loopAudio,
+          vibrate: vibrate,
+          volume: volume,
+          assetAudioPath: assetAudio,
+          notificationTitle: 'Medicine Time',
+          notificationBody: 'It is time to take your ${medicine.name}.',
+          enableNotificationOnKill: Platform.isIOS,
+        );
+        return Alarm.set(alarmSettings: editedAlarmSettings);
       });
-      saveMedicines(medicines!);
-      // Navigator.of(context).pop();
-    });
+    }
+
+    if (imageBytes != null) {
+      medicine.image = imageBytes;
+    }
+    Provider.of<MedicineProvider>(context, listen: false).editMedicine(medicine);
   }
 
   Future<void> pickTime(BuildContext context) async {
@@ -527,17 +501,7 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                       Checkbox(
                           value: medicine.checkboxStates.last.keys.first,
                           onChanged: (value) {
-                            setState(() {
-                              // print("************");
-                              Map<bool, String> mapAtIndex =
-                                  Map.from(medicine.checkboxStates.last);
-                              mapAtIndex.remove(mapAtIndex.keys.first);
-                              mapAtIndex[value!] = value == true
-                                  ? DateFormat('hh:mm a').format(DateTime.now())
-                                  : "";
-                              medicine.checkboxStates.last = mapAtIndex;
-                              saveMedicines(medicines!);
-                            });
+                            Provider.of<MedicineProvider>(context, listen: false).updateCheckbox(medicine, value!);
                           }),
                     ],
                   ),
@@ -562,13 +526,9 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
                           ),
                           ElevatedButton(
                             onPressed: () {
-                              setState(() {
-                                onDeletePressed(medicine);
-                              });
-                              Navigator.of(context)
-                                  .pop(); // Close the confirmation dialog
-                              Navigator.of(context)
-                                  .pop(); // Close the edit dialog
+                              Provider.of<MedicineProvider>(context, listen: false).deleteMedicine(medicine);
+                              Navigator.of(context).pop(); // Close the confirmation dialog
+                              Navigator.of(context).pop(); // Close the edit dialog
                             },
                             child: Text(Languages.of(context)!.delete),
                           ),
@@ -943,15 +903,7 @@ class _MedicineTablePageState extends State<MedicineTablePage> {
     );
   }
 
-  void _deleteMedicine(int index) {
-    setState(() {
-      if (medicines != null) {
-        medicines!.removeAt(index);
-        saveMedicines(medicines!);
-      }
-    });
-    Navigator.of(context).pop();
-  }
+
 }
 
 class AddMedicineWidget extends StatelessWidget {

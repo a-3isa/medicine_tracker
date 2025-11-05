@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:medicine_tracker/medicine.dart';
+import 'package:medicine_tracker/models/medicine.dart';
 import 'package:path_provider/path_provider.dart';
 
 

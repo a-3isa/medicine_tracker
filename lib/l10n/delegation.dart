@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:medicine_tracker/language/language.dart';
-import 'package:medicine_tracker/language/language_en.dart';
-import 'package:medicine_tracker/language/language_ar.dart';
+import 'package:medicine_tracker/l10n/language.dart';
+import 'package:medicine_tracker/l10n/language_en.dart';
+import 'package:medicine_tracker/l10n/language_ar.dart';
 
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<Languages> {

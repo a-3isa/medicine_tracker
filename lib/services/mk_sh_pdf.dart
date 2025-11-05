@@ -3,12 +3,12 @@ import 'dart:math';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:flutter/material.dart';
-import 'package:medicine_tracker/language/language.dart';
+import 'package:medicine_tracker/l10n/language.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'medicine.dart';
+import 'package:medicine_tracker/models/medicine.dart';
 
 class PDFCreator {
   Future<pw.Font> loadFont() async {
@@ -154,10 +154,7 @@ class PDFCreator {
         final medicinesForDayAndDate = dayDateGroups[date]![day]!;
         final biometricsForDate =
             dateGroups[DateFormat('MM-dd').format(date)] ?? [];
-        // final prevDay = date.subtract(Duration(days: 1));
-        // print(date);
-        final bipapForDate =
-            bipapGroups[date] ?? [];
+        final bipapForDate = bipapGroups[date] ?? [];
         List<DateTime> keys = bipapGroups.keys.toList();
         int currentIndex = keys.indexOf(date);
         // print(keys);
@@ -173,14 +170,12 @@ class PDFCreator {
               .measurementDate
               .difference(previousBipapForDate![0].measurementDate)
               .inDays;
-
-          // Do something with previousBipapForDate
-          // print((previousBipapForDate.first.bipap!-bipapForDate[0].bipap!)/differenceInDays);
-          // print(differenceInDays);
-          bipapForDate[0].bipap = (bipapForDate[0].bipap!-previousBipapForDate.first.bipap!)/differenceInDays;
+          bipapForDate[0].bipap =
+              (bipapForDate[0].bipap! - previousBipapForDate.first.bipap!) /
+                  differenceInDays;
           print("ooooooooooooooooooooooooooooo");
           print(bipapForDate[0].bipap);
-        } 
+        }
         List<pw.Widget> dayDateContent = [
           pw.Center(
               child: pw.Text(
@@ -211,7 +206,8 @@ class PDFCreator {
                             child: pw.Text('Home Bipap', style: normalStyle),
                           ),
                           pw.Center(
-                            child: pw.Text('${bipapForDate.isNotEmpty? bipapForDate[0].bipap : 0}',
+                            child: pw.Text(
+                                '${bipapForDate.isNotEmpty ? bipapForDate[0].bipap : 0}',
                                 style: normalStyle),
                           ),
                         ],

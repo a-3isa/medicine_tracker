@@ -1,12 +1,12 @@
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:medicine_tracker/classes_handler.dart';
-import 'package:medicine_tracker/handler.dart';
-import 'package:medicine_tracker/language/language.dart';
-import 'package:medicine_tracker/localization/delegation.dart';
-import 'package:medicine_tracker/localization/constant.dart';
+import 'package:medicine_tracker/services/classes_handler.dart';
+import 'package:medicine_tracker/services/handler.dart';
+import 'package:medicine_tracker/l10n/language.dart';
+import 'package:medicine_tracker/l10n/delegation.dart';
+import 'package:medicine_tracker/l10n/constant.dart';
 import 'package:flutter/material.dart';
-import 'package:medicine_tracker/medicine.dart';
-import 'splash_screen.dart';
+import 'package:medicine_tracker/models/medicine.dart';
+import 'package:medicine_tracker/screens/splash_screen.dart';
 
 class PersonalInfoPage extends StatefulWidget {
   const PersonalInfoPage({super.key});

@@ -2,16 +2,18 @@ import 'package:alarm/alarm.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart'; // Import the date_symbol_data_local library
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:medicine_tracker/handler.dart';
-import 'package:medicine_tracker/language/language.dart';
-import 'package:medicine_tracker/localization/delegation.dart';
-import 'package:medicine_tracker/localization/constant.dart';
+import 'package:medicine_tracker/services/handler.dart';
+import 'package:medicine_tracker/l10n/language.dart';
+import 'package:medicine_tracker/l10n/delegation.dart';
+import 'package:medicine_tracker/l10n/constant.dart';
 import 'package:flutter/material.dart';
-import 'package:medicine_tracker/model/language_model.dart';
-import 'package:medicine_tracker/personal_screen.dart';
+import 'package:medicine_tracker/models/language_model.dart';
+import 'package:medicine_tracker/screens/personal_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'splash_screen.dart';
+import 'package:medicine_tracker/screens/splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import 'package:medicine_tracker/providers/medicine_provider.dart';
 // import 'package:flutter_background/flutter_background.dart';
 
 
@@ -210,37 +212,51 @@ class _MedicineTableAppState extends State<MedicineTableApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(context)
-              .copyWith(textScaler: const TextScaler.linear(1.0)),
-          child: child!,
-        );
-      },
-      title: 'Multi Language',
-      debugShowCheckedModeBanner: false,
-      locale: _locale,
-      home: const SplashScreen(),
-      supportedLocales: const [
-        Locale('en', ''),
-        Locale('ar', ''),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => MedicineProvider()),
       ],
-      localizationsDelegates: const [
-        AppLocalizationsDelegate(),
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      localeResolutionCallback: (locale, supportedLocales) {
-        for (var supportedLocale in supportedLocales) {
-          if (supportedLocale.languageCode == locale?.languageCode &&
-              supportedLocale.countryCode == locale?.countryCode) {
-            return supportedLocale;
+      child: MaterialApp(
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: const TextScaler.linear(1.0)),
+            child: child!,
+          );
+        },
+        title: 'Medicine Tracker',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        ),
+        darkTheme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
+        ),
+        themeMode: ThemeMode.system,
+        locale: _locale,
+        home: const SplashScreen(),
+        supportedLocales: const [
+          Locale('en', ''),
+          Locale('ar', ''),
+        ],
+        localizationsDelegates: const [
+          AppLocalizationsDelegate(),
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        localeResolutionCallback: (locale, supportedLocales) {
+          for (var supportedLocale in supportedLocales) {
+            if (supportedLocale.languageCode == locale?.languageCode &&
+                supportedLocale.countryCode == locale?.countryCode) {
+              return supportedLocale;
+            }
           }
-        }
-        return supportedLocales.first;
-      },
+          return supportedLocales.first;
+        },
+      ),
     );
   }
 }

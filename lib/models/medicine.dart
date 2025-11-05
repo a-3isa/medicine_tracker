@@ -1,16 +1,23 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
+/// Represents a medicine with its details, schedule, and tracking information.
 class Medicine {
-  String name;
-  Uint8List? image;
-  String period;
-  DateTime time;
-  int? alarmId;
-  List<Map<DateTime, String>> dates;
-  List<Map<bool, String>> checkboxStates;
+  final String name;
+  final Uint8List? image;
+  final String period;
+  final DateTime time;
+  final int? alarmId;
+  final List<Map<DateTime, String>> dates;
+  final List<Map<bool, String>> checkboxStates;
 
-  Medicine({
+  /// Creates a new Medicine instance.
+  ///
+  /// [name] is the name of the medicine.
+  /// [period] is the dosage period (e.g., daily, weekly).
+  /// [time] is the scheduled time for taking the medicine.
+  /// [image] is an optional image of the medicine.
+  /// [alarmId] is the ID of the associated alarm.
+  /// [dates] is a list of dates with associated notes.
+  /// [checkboxStates] tracks the completion status with notes.
+  const Medicine({
     required this.name,
     this.image,
     this.alarmId,
@@ -18,8 +25,8 @@ class Medicine {
     required this.time,
     List<Map<bool, String>>? checkboxStates,
     List<Map<DateTime, String>>? dates,
-  })  : dates = dates ?? [],
-        checkboxStates = checkboxStates ?? [];
+  })  : dates = dates ?? const [],
+        checkboxStates = checkboxStates ?? const [];
 
   Map<String, dynamic> toJson() {
     return {
@@ -63,15 +70,24 @@ class Medicine {
   }
 }
 
+/// Represents biometric measurements for health tracking.
 class Biometrics {
-  String measurementDate;
-  String? time;
-  int? heartRate;
-  List<int>? bloodPressure; // List containing systolic and diastolic values
-  double? oxygen;
-  double? sugar;
+  final String measurementDate;
+  final String? time;
+  final int? heartRate;
+  final List<int>? bloodPressure; // List containing systolic and diastolic values
+  final double? oxygen;
+  final double? sugar;
 
-  Biometrics({
+  /// Creates a new Biometrics instance.
+  ///
+  /// [measurementDate] is the date of the measurement.
+  /// [time] is the optional time of the measurement.
+  /// [heartRate] is the heart rate in BPM.
+  /// [bloodPressure] is a list of systolic and diastolic values.
+  /// [oxygen] is the oxygen saturation level.
+  /// [sugar] is the blood sugar level.
+  const Biometrics({
     required this.measurementDate,
     this.heartRate,
     this.time,
@@ -110,12 +126,18 @@ class Biometrics {
   }
 }
 
+/// Represents personal information of the user.
 class Personal {
-  String name;
-  String age;
-  String personCase;
+  final String name;
+  final String age;
+  final String personCase;
 
-  Personal({
+  /// Creates a new Personal instance.
+  ///
+  /// [name] is the user's name.
+  /// [age] is the user's age.
+  /// [personCase] describes the user's medical case.
+  const Personal({
     required this.name,
     required this.age,
     required this.personCase,
@@ -139,11 +161,16 @@ class Personal {
   }
 }
 
+/// Represents Bipap (Bi-level Positive Airway Pressure) measurements.
 class Bipap {
-  DateTime measurementDate;
-  double? bipap;
+  final DateTime measurementDate;
+  final double? bipap;
 
-  Bipap({
+  /// Creates a new Bipap instance.
+  ///
+  /// [measurementDate] is the date of the measurement.
+  /// [bipap] is the Bipap value.
+  const Bipap({
     this.bipap,
     required this.measurementDate,
   });

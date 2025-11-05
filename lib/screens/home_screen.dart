@@ -1,9 +1,9 @@
 // import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:medicine_tracker/classes_handler.dart';
-import 'medicine.dart';
-import 'package:medicine_tracker/language/language.dart';
+import 'package:medicine_tracker/services/classes_handler.dart';
+import 'package:medicine_tracker/models/medicine.dart';
+import 'package:medicine_tracker/l10n/language.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 class MedicineTable extends StatefulWidget {
